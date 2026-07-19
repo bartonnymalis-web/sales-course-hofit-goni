@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>תורת המכירות · חופית וגוני</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#000000; --panel:#101014; --panel-2:#16161c; --line:#26262e;
+    --pink:#D4006A; --white:#ffffff; --muted:#9a9aa6; --muted-2:#6b6b76;
+    --font:'Heebo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%}
+  body{
+    background:
+      radial-gradient(1000px 600px at 80% -5%, rgba(212,0,106,.16), transparent 60%),
+      radial-gradient(800px 500px at 10% 110%, rgba(212,0,106,.10), transparent 55%),
+      var(--bg);
+    color:var(--white); font-family:var(--font); direction:rtl;
+    -webkit-font-smoothing:antialiased; min-height:100vh;
+    display:flex; align-items:center; justify-content:center; padding:48px 20px;
+  }
+  .wrap{width:100%;max-width:940px}
+  .head{text-align:center;margin-bottom:40px}
+  .mark{
+    width:60px;height:60px;border-radius:16px;background:var(--pink);
+    display:inline-flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:30px;color:#fff;margin-bottom:20px;
+    box-shadow:0 0 40px rgba(212,0,106,.55);
+  }
+  .kicker{color:var(--pink);font-weight:700;font-size:13px;letter-spacing:3px;margin-bottom:12px}
+  h1{font-size:clamp(30px,5vw,46px);font-weight:900;letter-spacing:-.5px;line-height:1.1}
+  .sub{color:var(--muted);font-size:16px;margin-top:14px;font-weight:500}
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:16px;margin-top:8px;
+  }
+  .card{
+    position:relative;display:block;text-decoration:none;color:inherit;
+    background:linear-gradient(160deg,var(--panel-2),var(--panel));
+    border:1px solid var(--line);border-radius:18px;padding:26px 24px;
+    transition:.22s cubic-bezier(.2,.7,.2,1);overflow:hidden;
+  }
+  .card::before{
+    content:"";position:absolute;inset:0;border-radius:18px;padding:1px;
+    background:linear-gradient(160deg,transparent,rgba(212,0,106,0));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;mask-composite:exclude;transition:.22s;
+  }
+  .card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--accent,#D4006A) 55%,transparent);box-shadow:0 18px 50px rgba(0,0,0,.5),0 0 0 1px color-mix(in srgb,var(--accent,#D4006A) 25%,transparent)}
+  .card .num{font-size:12px;font-weight:700;letter-spacing:2px;color:var(--muted-2)}
+  .card .dot{width:12px;height:12px;border-radius:50%;background:var(--accent,#D4006A);display:inline-block;box-shadow:0 0 14px var(--accent,#D4006A);margin-inline-start:8px;vertical-align:middle}
+  .card h2{font-size:23px;font-weight:800;margin:14px 0 6px}
+  .card p{color:var(--muted);font-size:14px;line-height:1.5}
+  .card .go{margin-top:18px;color:var(--accent,#D4006A);font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px}
+  .card .go svg{transition:.2s}
+  .card:hover .go svg{transform:translateX(-5px)}
+  .sim{grid-column:1/-1;background:linear-gradient(160deg,#1a1015,#120a0d)}
+  .foot{text-align:center;color:var(--muted-2);font-size:12.5px;margin-top:36px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="head">
+      <div class="mark">מ</div>
+      <div class="kicker">SALES MASTERY</div>
+      <h1>תורת המכירות</h1>
+      <div class="sub">שלוש רמות · מהיסודות ועד המומחיות · לחופית וגוני</div>
+    </div>
+
+    <div class="grid">
+      <a class="card" href="level-1.html" style="--accent:#D4006A">
+        <div class="num">רמה 01 <span class="dot"></span></div>
+        <h2>מתחילים</h2>
+        <p>מהי מכירה באמת, מודל DISC, מצבי התודעה של הליד, ופתיחת שיחה נכונה.</p>
+        <div class="go">כניסה לרמה <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div>
+      </a>
+
+      <a class="card" href="level-2.html" style="--accent:#2D7FF9">
+        <div class="num">רמה 02 <span class="dot"></span></div>
+        <h2>מתקדמים</h2>
+        <p>כיול טונציה, הצגת מחיר, וטיפול בהתנגדויות הישראליות הקלאסיות.</p>
+        <div class="go">כניסה לרמה <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div>
+      </a>
+
+      <a class="card" href="level-3.html" style="--accent:#16B981">
+        <div class="num">רמה 03 <span class="dot"></span></div>
+        <h2>מומחים</h2>
+        <p>ניהול אנרגיה, זיהוי ליד לא רלוונטי, וסגירה ברמת המאסטר.</p>
+        <div class="go">כניסה לרמה <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div>
+      </a>
+
+      <a class="card sim" href="simulation.html" style="--accent:#D4006A">
+        <div class="num">בונוס <span class="dot"></span></div>
+        <h2>סימולציית מכירות</h2>
+        <p>תרגול אינטראקטיבי — לתרגל את מה שלמדתם על מקרים אמיתיים.</p>
+        <div class="go">התחלת סימולציה <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg></div>
+      </a>
+    </div>
+
+    <div class="foot">© תורת המכירות · חופית וגוני</div>
+  </div>
+</body>
+</html>

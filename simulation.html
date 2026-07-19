@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>סימולציית מכירות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#000000;--bg-soft:#0a0a0c;--panel:#101014;--panel-2:#16161c;
+  --line:#26262e;--pink:#D4006A;--white:#ffffff;--muted:#9a9aa6;--muted-2:#6b6b76;
+  --accent:#D4006A;
+  --font:'Heebo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
+  --sidebar-w:260px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--bg);color:var(--white);font-family:var(--font);direction:rtl;overflow:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+
+/* layout */
+.app{display:flex;height:100vh;width:100vw}
+
+/* sidebar */
+.sidebar{width:var(--sidebar-w);flex:0 0 var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#0c0c10,#050507);border-left:1px solid var(--line);display:flex;flex-direction:column;z-index:40;transition:transform .3s ease}
+.brand{padding:22px 20px 16px;border-bottom:1px solid var(--line)}
+.brand .logo{display:flex;align-items:center;gap:10px}
+.brand .mark{width:34px;height:34px;border-radius:9px;background:var(--pink);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:18px;box-shadow:0 0 22px rgba(212,0,106,.55)}
+.brand .name{font-weight:800;font-size:17px;letter-spacing:.2px}
+.brand .sub{color:var(--muted);font-size:11.5px;margin-top:7px;font-weight:500;line-height:1.5}
+.nav{flex:1;overflow-y:auto;padding:12px 10px}
+.nav::-webkit-scrollbar{width:7px}
+.nav::-webkit-scrollbar-thumb{background:#222;border-radius:8px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:11px;cursor:pointer;color:var(--muted);font-weight:600;font-size:13.5px;transition:.18s;margin-bottom:3px;border:1px solid transparent}
+.nav-item:hover{background:#15151b;color:#fff}
+.nav-item .dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px;background:var(--pink)}
+.nav-item .ni-num{font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-right:auto}
+.nav-item.active{background:#15151b;color:#fff;border-color:color-mix(in srgb,var(--accent) 40%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent) inset}
+.nav-cover{border-bottom:1px dashed var(--line);margin-bottom:8px;padding-bottom:10px}
+.nav-foot{padding:12px 16px;border-top:1px solid var(--line);color:var(--muted-2);font-size:11px;line-height:1.5}
+
+/* deck */
+.deck{flex:1;height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;position:relative}
+.deck::-webkit-scrollbar{width:0}
+
+/* slide base */
+.slide{min-height:100vh;width:100%;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;padding:64px clamp(24px,5vw,90px);overflow:hidden}
+.slide .glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(900px 520px at 78% 18%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%);opacity:.9}
+.slide .grid-bg{position:absolute;inset:0;pointer-events:none;opacity:.25;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(circle at 78% 30%,#000,transparent 70%);mask-image:radial-gradient(circle at 78% 30%,#000,transparent 70%)}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+.slide.in-view .reveal{opacity:1;transform:none}
+.slide.in-view .reveal.d1{transition-delay:.08s}
+.slide.in-view .reveal.d2{transition-delay:.16s}
+.slide.in-view .reveal.d3{transition-delay:.24s}
+.slide.in-view .reveal.d4{transition-delay:.32s}
+.slide.in-view .reveal.d5{transition-delay:.40s}
+.art-wrap{opacity:0;transform:translateX(-34px) scale(.96);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:.18s}
+.slide.in-view .art-wrap{opacity:1;transform:none}
+
+/* cover */
+.cover{flex-direction:column;text-align:center;gap:20px}
+.cover .kicker{font-family:var(--mono);letter-spacing:3px;font-size:13px;color:var(--pink);text-transform:uppercase;font-weight:700}
+.cover h1{font-size:clamp(38px,7vw,84px);font-weight:900;line-height:1.02;margin:0;background:linear-gradient(180deg,#fff,#cfa6bd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cover .pinkword{color:var(--pink);-webkit-text-fill-color:var(--pink)}
+.cover .crumb{display:inline-flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;color:var(--muted);font-size:clamp(14px,2vw,19px);font-weight:600;margin-top:6px}
+.cover .crumb b{color:#fff}
+.cover .crumb .sep{color:var(--pink);font-weight:800}
+.cover .big-mark{width:96px;height:96px;border-radius:24px;background:var(--pink);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:46px;box-shadow:0 0 60px rgba(212,0,106,.55);margin-bottom:6px}
+.cover .scroll-hint{margin-top:26px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.cover .scroll-hint .chev{width:22px;height:22px;border-right:2px solid var(--pink);border-bottom:2px solid var(--pink);transform:rotate(45deg);animation:bob 1.6s infinite}
+@keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(5px,5px)}}
+
+/* topic slides */
+.topic{align-items:center}
+.topic-inner{width:100%;max-width:1180px;display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(28px,5vw,70px);align-items:center}
+.t-text{min-width:0}
+.t-tag{display:inline-flex;align-items:center;gap:9px;margin-bottom:18px;font-size:12.5px;font-weight:700;color:var(--accent);font-family:var(--mono);letter-spacing:.5px}
+.t-tag .pill{background:color-mix(in srgb,var(--accent) 14%,transparent);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);padding:4px 11px;border-radius:999px}
+.t-text h3{font-size:clamp(26px,4.2vw,50px);font-weight:900;line-height:1.08;margin:0 0 14px;letter-spacing:-.5px}
+.t-text h3 .hl{color:var(--accent)}
+.t-desc{color:#d9d9e3;font-size:clamp(15px,1.6vw,18px);line-height:1.65;font-weight:400;max-width:560px;margin:0}
+.t-points{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-direction:column;gap:12px;max-width:560px}
+.t-points li{display:flex;gap:12px;align-items:flex-start;color:#c7c7d2;font-size:15px;line-height:1.5;font-weight:500}
+.t-points li .tick{flex:0 0 22px;width:22px;height:22px;border-radius:7px;margin-top:2px;background:color-mix(in srgb,var(--accent) 16%,transparent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:900;font-size:12px}
+.t-art{display:flex;align-items:center;justify-content:center;min-width:0}
+
+/* art card */
+.art-card{width:100%;max-width:460px;aspect-ratio:1/1;border-radius:28px;background:radial-gradient(120% 120% at 75% 15%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 55%),linear-gradient(160deg,#0e0e13,#08080b);border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.02) inset;display:flex;align-items:center;justify-content:center;padding:34px;position:relative;overflow:hidden}
+.art-card::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 120%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%)}
+.art-card svg{width:100%;height:100%;position:relative;z-index:1;overflow:visible}
+
+/* objections full-width */
+.obj-full{max-width:1100px;width:100%}
+.obj-header{margin-bottom:22px}
+.obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.obj-card{background:#0c0c11;border:1px solid var(--line);border-right:3px solid var(--accent);border-radius:12px;padding:14px 16px}
+.obj-trigger{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:7px}
+.obj-trigger .badge{background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);padding:2px 8px;border-radius:999px;font-size:11px}
+.obj-ans{font-size:14px;color:#e2e2ea;line-height:1.55;font-weight:500}
+
+/* ratio */
+.ratio-wrap{width:100%}
+.ratio-bar{display:flex;height:88px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.ratio-client{flex:0 0 70%;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 70%,#000),color-mix(in srgb,var(--accent) 40%,#000));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.ratio-you{flex:0 0 30%;background:#15151c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-right:1px solid var(--line)}
+.ratio-pct{font-family:var(--mono);font-weight:800;font-size:32px;color:#fff}
+.ratio-lab{font-size:13px;color:#eee;font-weight:700}
+.ratio-you .ratio-lab{color:var(--muted)}
+.ratio-note{margin-top:16px;color:#c7c7d2;font-size:14px;line-height:1.6;text-align:center}
+
+/* animations */
+.float{animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.dash{stroke-dasharray:6 8;animation:march 1.4s linear infinite}
+@keyframes march{to{stroke-dashoffset:-28}}
+.spin-slow{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* progress + arrows + counter */
+.progress{position:fixed;top:0;right:0;left:0;height:4px;z-index:60}
+.progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#fff);transition:width .35s ease;box-shadow:0 0 14px var(--accent)}
+.arrows{position:fixed;bottom:22px;left:24px;display:flex;gap:10px;z-index:50}
+.arrow-btn{width:50px;height:50px;border-radius:14px;cursor:pointer;background:rgba(16,16,22,.85);border:1px solid var(--line);backdrop-filter:blur(8px);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;transition:.18s}
+.arrow-btn:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 45%,transparent)}
+.arrow-btn:disabled{opacity:.3;cursor:default;transform:none;background:rgba(16,16,22,.85);border-color:var(--line);box-shadow:none}
+.counter{position:fixed;bottom:26px;right:calc(var(--sidebar-w) + 22px);z-index:50;font-family:var(--mono);font-size:13px;color:var(--muted);background:rgba(16,16,22,.7);border:1px solid var(--line);padding:6px 12px;border-radius:10px;backdrop-filter:blur(6px)}
+.counter b{color:#fff}
+
+/* mobile */
+.menu-btn{position:fixed;top:14px;right:14px;z-index:70;display:none;width:46px;height:46px;border-radius:12px;background:rgba(16,16,22,.9);border:1px solid var(--line);color:#fff;align-items:center;justify-content:center;cursor:pointer;font-size:20px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;display:none}
+@media(max-width:900px){
+  .topic-inner{grid-template-columns:1fr;gap:26px}
+  .t-art{order:-1}
+  .art-card{max-width:300px}
+  .sidebar{position:fixed;right:0;top:0;transform:translateX(100%);box-shadow:-10px 0 40px rgba(0,0,0,.6)}
+  .sidebar.open{transform:none}
+  .menu-btn{display:flex}
+  .scrim.open{display:block}
+  .counter{right:auto;left:24px;bottom:84px}
+  .arrows{bottom:18px;left:18px}
+  .obj-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo">
+      <div class="mark">מ</div>
+      <div><div class="name">סימולציית מכירות</div></div>
+    </div>
+    <div class="sub">11 נושאים · מפגש הכשרה</div>
+  </div>
+  <div class="nav" id="nav"></div>
+  <div class="nav-foot">11 נושאים · מפגש הכשרה</div>
+</nav>
+
+<!-- ===== DECK ===== -->
+<div class="deck" id="deck">
+
+<!-- 1: פתיחת שיחה -->
+<section class="slide topic" data-index="1">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">01</span> פתיחת שיחה</div>
+      <h3 class="reveal d1">הטון <span class="hl">הראשון</span><br>קובע הכל</h3>
+      <p class="t-desc reveal d2">לפני שמגיעים לתוכן — לכייל את עצמך לאנרגיה של הלקוח.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>להקשיב לקצב ולאנרגיה של הלקוח — ולהתכוונן לפיו</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>שאלת בדיקה: <strong>"זה זמן טוב לדבר?"</strong></span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>קלילות = תחושת שיחה, לא חקירה</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <g class="float">
+              <rect x="120" y="52" width="100" height="198" rx="22" fill="none" stroke="var(--accent)" stroke-width="3.5"/>
+              <rect x="133" y="70" width="74" height="130" rx="9" fill="color-mix(in srgb,var(--accent) 8%,transparent)" stroke="var(--accent)" stroke-width="1.5"/>
+              <circle cx="170" cy="228" r="11" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+              <rect x="145" y="118" width="50" height="6" rx="3" fill="var(--accent)" opacity=".9"/>
+              <rect x="145" y="130" width="35" height="4" rx="2" fill="var(--accent)" opacity=".55"/>
+              <rect x="145" y="140" width="44" height="4" rx="2" fill="var(--accent)" opacity=".3"/>
+              <path d="M82 152 Q84 104 170 88" fill="none" stroke="var(--accent)" stroke-width="2" opacity=".5" class="dash"/>
+              <path d="M56 162 Q58 78 170 58" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".3" class="dash"/>
+              <rect x="80" y="165" width="36" height="22" rx="7" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="1.2"/>
+              <text x="98" y="180" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="11" fill="var(--accent)">טון</text>
+              <text x="170" y="302" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="13" fill="var(--muted)">הטון הראשון קובע הכל</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2: מחיר ושתיקה -->
+<section class="slide topic" data-index="2">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">02</span> מחיר ושתיקה</div>
+      <h3 class="reveal d1"><span class="hl">שתיקה</span> אחרי<br>המחיר = כוח</h3>
+      <p class="t-desc reveal d2">מי שממלא את השקט ראשון — בדרך כלל מפסיד.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>אחרי אמירת המחיר — שתיקה. זה רגע עיבוד, לא רגע לא נעים</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>לא להוריד טון, לא להאיץ, לא "להתנצל" על המספר</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>ביטחון הוא שפת גוף — גם בטלפון</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <circle cx="95" cy="115" r="27" fill="none" stroke="var(--accent)" stroke-width="3"/>
+            <circle cx="95" cy="107" r="9" fill="var(--accent)" opacity=".7"/>
+            <path d="M68 185 C68 154 122 154 122 185" fill="none" stroke="var(--accent)" stroke-width="3"/>
+            <rect x="143" y="98" width="54" height="38" rx="10" fill="color-mix(in srgb,var(--accent) 15%,transparent)" stroke="var(--accent)" stroke-width="2"/>
+            <text x="170" y="124" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="22" fill="var(--accent)">₪</text>
+            <circle cx="245" cy="115" r="27" fill="none" stroke="#444" stroke-width="3"/>
+            <circle cx="245" cy="107" r="9" fill="#444"/>
+            <path d="M218 185 C218 154 272 154 272 185" fill="none" stroke="#444" stroke-width="3"/>
+            <circle cx="238" cy="74" r="6" fill="#777" class="pulse" style="animation-delay:0s"/>
+            <circle cx="253" cy="66" r="6" fill="#777" class="pulse" style="animation-delay:.4s"/>
+            <circle cx="268" cy="59" r="6" fill="#777" class="pulse" style="animation-delay:.8s"/>
+            <line x1="123" y1="200" x2="217" y2="200" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 5"/>
+            <text x="170" y="220" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="12" fill="var(--muted)">השקט = הכוח</text>
+            <text x="170" y="270" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="14" fill="var(--accent)">אל תמלא את השקט</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3: הכובע המתחלף -->
+<section class="slide topic" data-index="3">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">03</span> הכובע המתחלף</div>
+      <h3 class="reveal d1">כל לקוח —<br><span class="hl">קצב אחר</span></h3>
+      <p class="t-desc reveal d2">שאל את עצמך באמצע: מול מי אני יושב ומה הוא צריך כדי להירגע?</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>ביישן/שקט: פחות לחץ להגיב מיד, שאלות סגורות יותר</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>"מה הוא צריך כדי להירגע?" — שאל את עצמך</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>הגמישות היא כלי, לא חולשה</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <circle cx="170" cy="170" r="116" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 6" class="spin-slow"/>
+            <circle cx="170" cy="54" r="36" fill="color-mix(in srgb,#ef4444 18%,transparent)" stroke="#ef4444" stroke-width="2.5"/>
+            <text x="170" y="48" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="15" fill="#ef4444">D</text>
+            <text x="170" y="65" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="10" fill="#ef4444">ישיר</text>
+            <circle cx="272" cy="232" r="36" fill="color-mix(in srgb,#2D7FF9 18%,transparent)" stroke="#2D7FF9" stroke-width="2.5"/>
+            <text x="272" y="226" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="15" fill="#2D7FF9">S</text>
+            <text x="272" y="244" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="10" fill="#2D7FF9">זהיר</text>
+            <circle cx="68" cy="232" r="36" fill="color-mix(in srgb,#f5c518 18%,transparent)" stroke="#f5c518" stroke-width="2.5"/>
+            <text x="68" y="226" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="15" fill="#f5c518">I</text>
+            <text x="68" y="244" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="10" fill="#f5c518">חברותי</text>
+            <circle cx="170" cy="170" r="44" fill="color-mix(in srgb,var(--accent) 16%,transparent)" stroke="var(--accent)" stroke-width="2.5" class="pulse"/>
+            <text x="170" y="165" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="13" fill="#fff">הכובע</text>
+            <text x="170" y="182" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="13" fill="var(--accent)">מתחלף</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4: הצגת מחיר -->
+<section class="slide topic" data-index="4">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">04</span> הצגת מחיר — מספרים</div>
+      <h3 class="reveal d1">הפרדה יוצרת<br><span class="hl">עיכול</span></h3>
+      <p class="t-desc reveal d2">רצף אחד יוצר בלבול — הפרדה נותנת ללקוח מקום לשמוע.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>"שבע... שמונה מאות" — לא ברצף אחד</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>קצב איטי יותר על המספר עצמו — נותן לו מקום</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>המספר הוא תמונה שצריך להיבנות, לא משפט</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <g class="float">
+              <text x="75" y="205" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="108" fill="var(--accent)">7</text>
+              <circle cx="148" cy="178" r="6" fill="#fff" class="pulse" style="animation-delay:0s"/>
+              <circle cx="166" cy="178" r="6" fill="#fff" class="pulse" style="animation-delay:.4s"/>
+              <circle cx="184" cy="178" r="6" fill="#fff" class="pulse" style="animation-delay:.8s"/>
+              <text x="264" y="205" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="76" fill="#fff">800</text>
+              <line x1="38" y1="222" x2="302" y2="222" stroke="var(--line)" stroke-width="1.5"/>
+              <text x="170" y="246" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="13" fill="var(--muted)">הפרדה = עיכול</text>
+              <path d="M36 227 L36 238 L114 238 L114 227" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".6"/>
+              <text x="75" y="254" text-anchor="middle" font-family="Heebo" font-size="10" fill="var(--accent)" opacity=".7">מאות</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5: "לא צריך" -->
+<section class="slide topic" data-index="5">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">05</span> "לא צריך" בהתחלה</div>
+      <h3 class="reveal d1">לא <span class="hl">להתווכח</span> —<br>לשאול שאלה</h3>
+      <p class="t-desc reveal d2">עמדה מגוננת = עדיין לא מבין מה באמת מדאיג אותו.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>לשאול שאלה שמזיזה מהעמדה המגוננת</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>להוריד תחושת "שיחת מכירה" ולהעלות תחושת שיחה על הבעיה שלו</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>ויכוח = מגן · שאלה = דלת פתוחה</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <path d="M170 46 L254 90 L254 186 Q254 254 170 294 Q86 254 86 186 L86 90 Z" fill="color-mix(in srgb,#333 20%,transparent)" stroke="#555" stroke-width="2.5"/>
+            <text x="170" y="170" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="17" fill="#777">לא צריך</text>
+            <text x="170" y="192" text-anchor="middle" font-family="Heebo" font-size="12" fill="#555">עמדה מגוננת</text>
+            <path d="M54 162 Q22 276 116 316" fill="none" stroke="var(--accent)" stroke-width="3" class="dash"/>
+            <polygon points="116,316 104,304 120,301" fill="var(--accent)"/>
+            <rect x="14" y="105" width="42" height="38" rx="10" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="1.5"/>
+            <text x="35" y="130" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="20" fill="var(--accent)">?</text>
+            <text x="170" y="326" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="12" fill="var(--accent)">שאלה = דרך אחרת</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6: התנגדויות — full width -->
+<section class="slide topic" data-index="6" style="align-items:flex-start;padding-top:52px;padding-bottom:52px">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="obj-full">
+    <div class="obj-header">
+      <div class="t-tag reveal"><span class="pill">06</span> "יקר לי" / "קשה לי"</div>
+      <h3 class="reveal d1" style="font-size:clamp(24px,3.6vw,44px);font-weight:900;margin:0 0 8px;letter-spacing:-.5px">אל תענה על ה<span style="color:var(--accent)">התנגדות המילולית</span> —<br>שאל מה מאחוריה</h3>
+      <p class="reveal d2" style="color:#d9d9e3;font-size:14.5px;margin:0;line-height:1.5">הדפוס המשותף לכולן: לחפור לשורש, לא להתגונן.</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">לקוח</span>"יקר לי"</div>
+        <div class="obj-ans">"אני שומע. יקר ביחס למה שציפית, או שזה בכלל לא בטווח שחשבת עליו?"</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">לקוח</span>"אני צריך לחשוב על זה"</div>
+        <div class="obj-ans">"יש משהו ספציפי שמטריד אותך, או שזה יותר תחושה של 'לא בטוח'?"</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">לקוח</span>"צריך להתייעץ"</div>
+        <div class="obj-ans">"מה אתה חושב שהם ישאלו? בוא נדבר על זה עכשיו כדי שתגיע אליהם עם תשובות."</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">לקוח</span>"אין לי זמן עכשיו"</div>
+        <div class="obj-ans">"זה 'אין זמן' כי השבועות משוגעים, או 'אין לי מקום בראש לזה עכשיו'?"</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">לקוח</span>"כבר ניסיתי ולא עבד"</div>
+        <div class="obj-ans">"מה היה שם שלא עבד? אני רוצה לוודא שאנחנו לא חוזרים על אותה טעות."</div>
+      </div>
+      <div class="obj-card reveal d5">
+        <div class="obj-trigger"><span class="badge">לקוח</span>"תשלח לי במייל"</div>
+        <div class="obj-ans">"בשמחה, אבל שתי דקות לפני — מה הכי חשוב לך שיהיה שם?"</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7: חלוקה 70/30 -->
+<section class="slide topic" data-index="7">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">07</span> חלוקה 70/30</div>
+      <h3 class="reveal d1"><span class="hl">70%</span> הלקוח,<br>30% אתה</h3>
+      <p class="t-desc reveal d2">ה-30% שלך הם שאלות שממשיכות אותו — לא הרצאה.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>ככל שהלקוח מדבר יותר — אתם לומדים יותר</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>מוכרים טוב יותר כשמכירים את הבעיה שלו בשפה שלו</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>שאלה טובה = השקעה, לא ויתור על הזמן</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card" style="flex-direction:column;justify-content:center;gap:0;padding:28px">
+          <div class="ratio-wrap">
+            <div class="ratio-bar">
+              <div class="ratio-client"><div class="ratio-pct">70%</div><div class="ratio-lab">הלקוח מדבר</div></div>
+              <div class="ratio-you"><div class="ratio-pct">30%</div><div class="ratio-lab">אתם</div></div>
+            </div>
+            <div class="ratio-note">שאלות שממשיכות אותו<br><span style="color:var(--accent);font-weight:700">לא הרצאה</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8: הקשבה + טונציה -->
+<section class="slide topic" data-index="8">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">08</span> הקשבה + טונציה</div>
+      <h3 class="reveal d1">הקשבה היא<br>לא <span class="hl">שקט</span></h3>
+      <p class="t-desc reveal d2">יש לה קול — ואותו קול משדר: "אני פה, אני רואה אותך".</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>"כן", "הבנתי", "אה" — בטונציה מתאימה</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>הקשבה פעילה = הלקוח מרגיש שמגיבים אליו</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>הטונציה עוברת גם בלי מילים</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <g class="float">
+              <path d="M128 82 Q128 50 170 50 Q228 50 228 122 Q228 182 190 200 Q176 210 176 232 L176 252" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M154 238 Q154 258 176 258 Q198 258 198 238" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"/>
+              <path d="M152 122 Q157 102 172 108 Q194 114 188 140 Q183 162 170 168" fill="none" stroke="var(--accent)" stroke-width="1.8" opacity=".5"/>
+              <path d="M252 112 Q268 134 252 156" fill="none" stroke="#fff" stroke-width="2.5" opacity=".7"/>
+              <path d="M267 98 Q293 134 267 170" fill="none" stroke="#fff" stroke-width="2" opacity=".5"/>
+              <path d="M282 84 Q318 134 282 184" fill="none" stroke="#fff" stroke-width="1.5" opacity=".3"/>
+              <rect x="40" y="274" width="52" height="28" rx="9" fill="color-mix(in srgb,var(--accent) 20%,transparent)" stroke="var(--accent)" stroke-width="1.5"/>
+              <text x="66" y="293" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="14" fill="#fff">כן</text>
+              <rect x="100" y="274" width="76" height="28" rx="9" fill="color-mix(in srgb,var(--accent) 12%,transparent)" stroke="var(--accent)" stroke-width="1.5" opacity=".85"/>
+              <text x="138" y="293" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="13" fill="#fff">הבנתי</text>
+              <rect x="184" y="274" width="52" height="28" rx="9" fill="color-mix(in srgb,var(--accent) 8%,transparent)" stroke="var(--accent)" stroke-width="1.5" opacity=".7"/>
+              <text x="210" y="293" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="14" fill="#fff">אה</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9: חיוך בשיחה -->
+<section class="slide topic" data-index="9">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">09</span> חיוך בשיחה</div>
+      <h3 class="reveal d1">החיוך עובר<br><span class="hl">גם בטלפון</span></h3>
+      <p class="t-desc reveal d2">חיוך פיזי משנה את הטמבר של הקול — הלקוח מרגיש את זה.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>חיוך = שינוי אקוסטי אמיתי בקול</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>לקוח מרגיש את האנרגיה, לא רק שומע את המילים</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>רגע לפני שמרימים — נשימה וחיוך</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <g class="float">
+              <rect x="108" y="46" width="124" height="218" rx="28" fill="none" stroke="var(--line)" stroke-width="2.5"/>
+              <rect x="122" y="65" width="96" height="158" rx="11" fill="#080810"/>
+              <rect x="150" y="52" width="40" height="8" rx="4" fill="var(--line)"/>
+              <circle cx="152" cy="112" r="7" fill="var(--accent)" class="pulse"/>
+              <circle cx="188" cy="112" r="7" fill="var(--accent)" class="pulse" style="animation-delay:.5s"/>
+              <path d="M140 148 Q170 178 200 148" fill="none" stroke="var(--accent)" stroke-width="4.5" stroke-linecap="round"/>
+              <circle cx="136" cy="150" r="4.5" fill="var(--accent)" opacity=".35"/>
+              <circle cx="204" cy="150" r="4.5" fill="var(--accent)" opacity=".35"/>
+              <circle cx="170" cy="244" r="13" fill="none" stroke="var(--line)" stroke-width="2.5"/>
+              <path d="M242 136 Q257 158 242 180" fill="none" stroke="var(--accent)" stroke-width="2" opacity=".6" class="dash"/>
+              <path d="M258 122 Q282 158 258 194" fill="none" stroke="var(--accent)" stroke-width="1.5" opacity=".35" class="dash"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10: בלאקאאוט -->
+<section class="slide topic" data-index="10">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">10</span> בלאקאאוט</div>
+      <h3 class="reveal d1">"מה? מה זאת<br><span class="hl">אומרת</span>?"</h3>
+      <p class="t-desc reveal d2">לא כישלון. כלי. קונה שנייה ומחזיר את הכדור ללקוח.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>קונה שנייה לחשיבה בלי להיראות אבוד</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>מחזיר את הכדור ללקוח — הוא ממשיך לדבר</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>אפשר גם כשלא מסכימים, לא רק כשלא מבינים</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <rect x="48" y="62" width="244" height="178" rx="16" fill="color-mix(in srgb,var(--accent) 8%,transparent)" stroke="var(--accent)" stroke-width="2"/>
+            <line x1="48" y1="88" x2="72" y2="62" stroke="var(--accent)" stroke-width="3"/>
+            <line x1="268" y1="88" x2="292" y2="62" stroke="var(--accent)" stroke-width="3"/>
+            <line x1="48" y1="214" x2="72" y2="240" stroke="var(--accent)" stroke-width="3"/>
+            <line x1="268" y1="214" x2="292" y2="240" stroke="var(--accent)" stroke-width="3"/>
+            <text x="152" y="200" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="118" fill="var(--accent)">?</text>
+            <rect x="216" y="98" width="18" height="52" rx="5" fill="#fff" opacity=".12"/>
+            <rect x="242" y="98" width="18" height="52" rx="5" fill="#fff" opacity=".12"/>
+            <text x="170" y="278" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="15" fill="#fff">לא כישלון — כלי</text>
+            <text x="170" y="298" text-anchor="middle" font-family="Heebo" font-size="12" fill="var(--muted)">מחזיר את הכדור ללקוח</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11: אנרגיה ומתי לוותר -->
+<section class="slide topic" data-index="11">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">11</span> אנרגיה ומתי לוותר</div>
+      <h3 class="reveal d1">לא כל שיחה<br><span class="hl">שווה השקעה</span></h3>
+      <p class="t-desc reveal d2">זו קריאה נכונה של המצב — לא חוסר סבלנות.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>5–10 דקות מספיקות לדעת אם יש שם משהו</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>סימנים: תשובות חד-מילתיות, אין שאלה נגדית, טונציה של "גומר"</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>האנרגיה שלך שווה יותר ממה שאתה "חייב" לכל שיחה</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+            <rect x="50" y="106" width="220" height="112" rx="16" fill="none" stroke="var(--line)" stroke-width="2.5"/>
+            <rect x="270" y="136" width="18" height="52" rx="6" fill="var(--line)"/>
+            <rect x="63" y="118" width="58" height="88" rx="9" fill="color-mix(in srgb,#16b981 30%,transparent)" stroke="#16b981" stroke-width="1.5"/>
+            <text x="92" y="158" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="13" fill="#16b981">5</text>
+            <text x="92" y="175" text-anchor="middle" font-family="Heebo" font-size="10" fill="#16b981">דק'</text>
+            <rect x="128" y="118" width="58" height="88" rx="9" fill="color-mix(in srgb,#16b981 18%,transparent)" stroke="#16b981" stroke-width="1" opacity=".75"/>
+            <text x="157" y="158" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="13" fill="#16b981">10</text>
+            <text x="157" y="175" text-anchor="middle" font-family="Heebo" font-size="10" fill="#16b981">דק'</text>
+            <rect x="193" y="118" width="58" height="88" rx="9" fill="color-mix(in srgb,#f5c518 14%,transparent)" stroke="#f5c518" stroke-width="1" opacity=".7"/>
+            <text x="222" y="170" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="22" fill="#f5c518">?</text>
+            <rect x="50" y="234" width="102" height="24" rx="7" fill="color-mix(in srgb,#16b981 12%,transparent)" stroke="#16b981" stroke-width="1"/>
+            <text x="101" y="251" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="11" fill="#16b981">יש תזוזה — המשך</text>
+            <rect x="162" y="234" width="108" height="24" rx="7" fill="color-mix(in srgb,#f5c518 10%,transparent)" stroke="#f5c518" stroke-width="1"/>
+            <text x="216" y="251" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="11" fill="#f5c518">אין תזוזה = לוותר</text>
+            <text x="170" y="294" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="13" fill="#fff">קריאה נכונה — לא חוסר סבלנות</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+</div><!-- /app -->
+
+<div class="progress"><div class="bar" id="progressBar"></div></div>
+<div class="arrows">
+  <button class="arrow-btn" id="prevBtn" title="הקודם">&#8593;</button>
+  <button class="arrow-btn" id="nextBtn" title="הבא">&#8595;</button>
+</div>
+<div class="counter" id="counter"><b>01</b> / 11</div>
+<button class="menu-btn" id="menuBtn">&#9776;</button>
+<div class="scrim" id="scrim"></div>
+
+<script>
+var TOPICS = [
+  'פתיחת שיחה','מחיר ושתיקה','הכובע המתחלף','הצגת מחיר',
+  '“לא צריך”','התנגדויות','חלוקה 70/30','הקשבה + טונציה',
+  'חיוך בשיחה','בלאקאאוט','אנרגיה'
+];
+var navEl = document.getElementById('nav');
+TOPICS.forEach(function(label,i){
+  var d = document.createElement('div');
+  d.className = 'nav-item';
+  d.dataset.goto = i;
+  d.innerHTML = '<span class=”dot”></span><span>'+label+'</span><span class=”ni-num”>'+String(i+1).padStart(2,'0')+'</span>';
+  navEl.appendChild(d);
+});
+
+var deck = document.getElementById('deck');
+var slideNodes = Array.from(deck.querySelectorAll('.slide'));
+var total = slideNodes.length;
+var current = 0;
+
+var progressBar = document.getElementById('progressBar');
+var counter = document.getElementById('counter');
+var prevBtn = document.getElementById('prevBtn');
+var nextBtn = document.getElementById('nextBtn');
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function updateUI(){
+  progressBar.style.width = ((current+1)/total*100)+'%';
+  counter.innerHTML = '<b>'+pad(current+1)+'</b> / '+pad(total);
+  prevBtn.disabled = current===0;
+  nextBtn.disabled = current===total-1;
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    n.classList.toggle('active', parseInt(n.dataset.goto)===current);
+  });
+}
+
+function goTo(i){
+  i = Math.max(0, Math.min(total-1, i));
+  current = i;
+  slideNodes[i].scrollIntoView({behavior:'smooth'});
+  updateUI();
+}
+
+prevBtn.addEventListener('click', function(){ goTo(current-1); });
+nextBtn.addEventListener('click', function(){ goTo(current+1); });
+
+document.querySelectorAll('.nav-item[data-goto]').forEach(function(n){
+  n.addEventListener('click', function(){ goTo(parseInt(n.dataset.goto)); });
+});
+
+document.addEventListener('keydown', function(e){
+  if(e.key==='ArrowLeft'||e.key==='ArrowDown'||e.key==='PageDown'){ e.preventDefault(); goTo(current+1); }
+  else if(e.key==='ArrowRight'||e.key==='ArrowUp'||e.key==='PageUp'){ e.preventDefault(); goTo(current-1); }
+  else if(e.key==='Home'){ e.preventDefault(); goTo(0); }
+  else if(e.key==='End'){ e.preventDefault(); goTo(total-1); }
+});
+
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(en){
+    if(en.isIntersecting){
+      en.target.classList.add('in-view');
+      var idx = slideNodes.indexOf(en.target);
+      if(idx >= 0){ current = idx; updateUI(); }
+    }
+  });
+},{ threshold:0.5 });
+slideNodes.forEach(function(s){ io.observe(s); });
+
+const menuBtn = document.getElementById("menuBtn");
+const sidebar = document.getElementById("sidebar");
+const scrim = document.getElementById("scrim");
+menuBtn.addEventListener("click", ()=>{ sidebar.classList.toggle("open"); scrim.classList.toggle("open"); });
+scrim.addEventListener("click", ()=>{ sidebar.classList.remove("open"); scrim.classList.remove("open"); });
+
+updateUI();
+</script>
+</body>
+</html>

@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>תורת המכירות · רמה 3 · מומחים · חופית וגוני</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#000000;
+    --bg-soft:#0a0a0c;
+    --panel:#101014;
+    --panel-2:#16161c;
+    --line:#26262e;
+    --pink:#D4006A;
+    --white:#ffffff;
+    --muted:#9a9aa6;
+    --muted-2:#6b6b76;
+    --accent:#D4006A; /* נדרס לכל שיעור */
+    --font:'Heebo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+    --mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
+    --sidebar-w:260px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    background:var(--bg);
+    color:var(--white);
+    font-family:var(--font);
+    direction:rtl;
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;text-decoration:none}
+
+  /* ===== פריסה ===== */
+  .app{display:flex;height:100vh;width:100vw}
+
+  /* ===== סרגל צד ===== */
+  .sidebar{
+    width:var(--sidebar-w);
+    flex:0 0 var(--sidebar-w);
+    height:100vh;
+    background:linear-gradient(180deg,#0c0c10,#050507);
+    border-left:1px solid var(--line);
+    display:flex;flex-direction:column;
+    z-index:40;
+    transition:transform .3s ease;
+  }
+  .brand{
+    padding:22px 20px 16px;
+    border-bottom:1px solid var(--line);
+  }
+  .brand .logo{display:flex;align-items:center;gap:10px}
+  .brand .mark{
+    width:34px;height:34px;border-radius:9px;
+    background:var(--pink);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:900;color:#fff;font-size:18px;
+    box-shadow:0 0 22px rgba(212,0,106,.55);
+  }
+  .brand .name{font-weight:800;font-size:17px;letter-spacing:.2px}
+  .brand .sub{color:var(--muted);font-size:11.5px;margin-top:7px;font-weight:500}
+
+  .nav{flex:1;overflow-y:auto;padding:12px 10px}
+  .nav::-webkit-scrollbar{width:7px}
+  .nav::-webkit-scrollbar-thumb{background:#222;border-radius:8px}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;
+    padding:10px 12px;border-radius:11px;cursor:pointer;
+    color:var(--muted);font-weight:600;font-size:14px;
+    transition:.18s;margin-bottom:3px;
+    border:1px solid transparent;
+  }
+  .nav-item:hover{background:#15151b;color:#fff}
+  .nav-item .dot{width:11px;height:11px;border-radius:50%;flex:0 0 11px}
+  .nav-item .ni-num{font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-right:auto}
+  .nav-item.active{
+    background:#15151b;color:#fff;
+    border-color:color-mix(in srgb,var(--ni,#D4006A) 40%,transparent);
+    box-shadow:0 0 0 1px color-mix(in srgb,var(--ni,#D4006A) 18%,transparent) inset;
+  }
+  .nav-cover{border-bottom:1px dashed var(--line);margin-bottom:8px;padding-bottom:10px}
+  .nav-foot{padding:12px 16px;border-top:1px solid var(--line);color:var(--muted-2);font-size:11px}
+
+  /* ===== מסך ראשי / דק ===== */
+  .deck{
+    flex:1;height:100vh;overflow-y:scroll;
+    scroll-snap-type:y mandatory;scroll-behavior:smooth;
+    position:relative;
+  }
+  .deck::-webkit-scrollbar{width:0}
+  .slide{
+    min-height:100vh;width:100%;
+    scroll-snap-align:start;
+    position:relative;
+    display:flex;align-items:center;justify-content:center;
+    padding:64px clamp(24px,5vw,90px);
+    overflow:hidden;
+  }
+  .slide .glow{
+    position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(900px 520px at 78% 18%, color-mix(in srgb,var(--accent) 16%,transparent), transparent 60%);
+    opacity:.9;
+  }
+  .slide .grid-bg{
+    position:absolute;inset:0;pointer-events:none;opacity:.25;
+    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+    background-size:46px 46px;
+    -webkit-mask-image:radial-gradient(circle at 78% 30%,#000,transparent 70%);
+    mask-image:radial-gradient(circle at 78% 30%,#000,transparent 70%);
+  }
+
+  /* ===== חשיפה באנימציה ===== */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+  .slide.in-view .reveal{opacity:1;transform:none}
+  .slide.in-view .reveal.d1{transition-delay:.08s}
+  .slide.in-view .reveal.d2{transition-delay:.16s}
+  .slide.in-view .reveal.d3{transition-delay:.24s}
+  .slide.in-view .reveal.d4{transition-delay:.32s}
+  .slide.in-view .reveal.d5{transition-delay:.40s}
+  .art-wrap{opacity:0;transform:translateX(-34px) scale(.96);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:.18s}
+  .slide.in-view .art-wrap{opacity:1;transform:none}
+
+  /* ===== שקופית פתיח (קאבר) ===== */
+  .cover{flex-direction:column;text-align:center;gap:20px}
+  .cover .kicker{
+    font-family:var(--mono);letter-spacing:3px;font-size:13px;color:var(--pink);
+    text-transform:uppercase;font-weight:700;
+  }
+  .cover h1{
+    font-size:clamp(38px,7vw,84px);font-weight:900;line-height:1.02;margin:0;
+    background:linear-gradient(180deg,#fff,#cfa6bd);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .cover .pinkword{color:var(--pink);-webkit-text-fill-color:var(--pink)}
+  .cover .crumb{
+    display:inline-flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;
+    color:var(--muted);font-size:clamp(14px,2vw,19px);font-weight:600;margin-top:6px;
+  }
+  .cover .crumb b{color:#fff}
+  .cover .crumb .sep{color:var(--pink);font-weight:800}
+  .cover .big-mark{
+    width:96px;height:96px;border-radius:24px;background:var(--pink);
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:52px;
+    box-shadow:0 0 60px rgba(212,0,106,.55);margin-bottom:6px;
+  }
+  .cover .scroll-hint{
+    margin-top:26px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .cover .scroll-hint .chev{width:22px;height:22px;border-right:2px solid var(--pink);border-bottom:2px solid var(--pink);transform:rotate(45deg);animation:bob 1.6s infinite}
+  @keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(5px,5px)}}
+
+  /* ===== שקופית פתיח שיעור ===== */
+  .lesson-intro{flex-direction:column;text-align:center;gap:8px}
+  .lesson-intro .l-num{
+    font-family:var(--mono);font-size:clamp(120px,22vw,260px);font-weight:800;line-height:.85;
+    color:transparent;-webkit-text-stroke:2px color-mix(in srgb,var(--accent) 70%,#fff 0%);
+    text-shadow:0 0 80px color-mix(in srgb,var(--accent) 45%,transparent);
+    letter-spacing:-6px;
+  }
+  .lesson-intro .l-tag{
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:13px;letter-spacing:2px;font-weight:700;
+    color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);
+    padding:7px 16px;border-radius:999px;text-transform:uppercase;
+    background:color-mix(in srgb,var(--accent) 8%,transparent);
+  }
+  .lesson-intro h2{font-size:clamp(34px,6vw,68px);font-weight:900;margin:6px 0 0;line-height:1.05}
+  .lesson-intro .l-topics{color:var(--muted);font-size:15px;max-width:640px;margin-top:14px;line-height:1.7}
+
+  /* ===== שקופית נושא ===== */
+  .topic{align-items:center}
+  .topic-inner{
+    width:100%;max-width:1180px;display:grid;grid-template-columns:1.05fr .95fr;
+    gap:clamp(28px,5vw,70px);align-items:center;
+  }
+  .t-text{min-width:0}
+  .t-tag{
+    display:inline-flex;align-items:center;gap:9px;margin-bottom:18px;
+    font-size:12.5px;font-weight:700;color:var(--accent);
+    font-family:var(--mono);letter-spacing:.5px;
+  }
+  .t-tag .pill{
+    background:color-mix(in srgb,var(--accent) 14%,transparent);
+    border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);
+    padding:4px 11px;border-radius:999px;
+  }
+  .share-badge{
+    display:inline-flex;align-items:center;gap:7px;
+    background:rgba(255,255,255,.06);border:1px solid var(--line);
+    color:#cfcfe0;padding:4px 11px;border-radius:999px;font-size:12px;font-weight:600;
+    margin-bottom:16px;
+  }
+  .share-badge svg{width:14px;height:14px}
+  .t-text h3{
+    font-size:clamp(28px,4.4vw,52px);font-weight:900;line-height:1.08;margin:0 0 16px;
+    letter-spacing:-.5px;
+  }
+  .t-text h3 .hl{color:var(--accent)}
+  .t-desc{color:#d9d9e3;font-size:clamp(16px,1.7vw,20px);line-height:1.6;font-weight:400;max-width:560px}
+  .t-points{list-style:none;padding:0;margin:22px 0 0;display:flex;flex-direction:column;gap:12px;max-width:560px}
+  .t-points li{
+    display:flex;gap:12px;align-items:flex-start;color:#c7c7d2;font-size:15.5px;line-height:1.5;font-weight:500;
+  }
+  .t-points li .tick{
+    flex:0 0 22px;width:22px;height:22px;border-radius:7px;margin-top:1px;
+    background:color-mix(in srgb,var(--accent) 16%,transparent);
+    border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+    display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:900;font-size:12px;
+  }
+  .t-art{display:flex;align-items:center;justify-content:center;min-width:0}
+
+  /* ===== כרטיס איור ===== */
+  .art-card{
+    width:100%;max-width:460px;aspect-ratio:1/1;border-radius:28px;
+    background:radial-gradient(120% 120% at 75% 15%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 55%),linear-gradient(160deg,#0e0e13,#08080b);
+    border:1px solid var(--line);
+    box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.02) inset;
+    display:flex;align-items:center;justify-content:center;padding:34px;position:relative;overflow:hidden;
+  }
+  .art-card::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 120%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%)}
+  .art-card svg{width:100%;height:100%;position:relative;z-index:1;overflow:visible}
+  .float{animation:float 5s ease-in-out infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+  .spin-slow{transform-origin:center;animation:spin 22s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .dash{stroke-dasharray:6 8;animation:march 1.4s linear infinite}
+  @keyframes march{to{stroke-dashoffset:-28}}
+  .pulse{animation:pulse 2.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+  /* ===== בלוק העתקה ===== */
+  .copy-card{
+    margin-top:26px;max-width:560px;background:#0c0c11;border:1px solid var(--line);
+    border-radius:16px;overflow:hidden;
+  }
+  .copy-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:11px 15px;background:#121219;border-bottom:1px solid var(--line);
+  }
+  .copy-head .ch-label{
+    font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;display:flex;align-items:center;gap:8px;
+  }
+  .copy-head .ch-label .dotc{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+  .copy-btn{
+    display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+    background:color-mix(in srgb,var(--accent) 16%,transparent);
+    border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+    color:#fff;font-family:var(--font);font-weight:700;font-size:12.5px;
+    padding:6px 13px;border-radius:9px;transition:.18s;
+  }
+  .copy-btn:hover{background:color-mix(in srgb,var(--accent) 28%,transparent)}
+  .copy-btn.done{background:rgba(22,185,129,.18);border-color:rgba(22,185,129,.55);color:#5af0bf}
+  .copy-btn svg{width:14px;height:14px}
+  .copy-body{
+    padding:16px 18px;font-family:var(--mono);font-size:14.5px;line-height:1.75;color:#e7e7ef;
+    direction:rtl;white-space:pre-wrap;
+  }
+
+  /* ===== בלוק דוגמאות לשיחה ===== */
+  .ex-block{margin-top:22px;max-width:600px}
+  .ex-title{font-family:var(--mono);font-size:12.5px;color:var(--accent);font-weight:700;margin-bottom:11px;display:flex;align-items:center;gap:7px}
+  .ex-list{display:flex;flex-direction:column;gap:9px}
+  .ex-item{display:flex;align-items:stretch;gap:8px}
+  .ex-text{flex:1;background:#0c0c11;border:1px solid var(--line);border-right:3px solid var(--accent);border-radius:11px;padding:11px 14px;font-family:var(--mono);font-size:13.5px;line-height:1.6;color:#e7e7ef;direction:rtl}
+  .ex-copy{flex:0 0 auto;align-self:center}
+
+  /* ===== תג שאלה לקהל ===== */
+  .discuss-badge{display:inline-flex;align-items:center;gap:7px;background:color-mix(in srgb,var(--accent) 14%,transparent);border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);color:#fff;padding:5px 13px;border-radius:999px;font-size:12.5px;font-weight:700;margin-bottom:16px}
+
+  /* ===== זיהוי סגנון לקוח ===== */
+  .identify{display:flex;flex-direction:column;gap:10px;width:100%;max-width:560px}
+  .id-row{display:flex;gap:12px;align-items:flex-start;background:linear-gradient(160deg,color-mix(in srgb,var(--ic) 16%,#0b0b0f),#0a0a0d);border:1px solid color-mix(in srgb,var(--ic) 45%,transparent);border-radius:14px;padding:13px 15px}
+  .id-badge{flex:0 0 40px;width:40px;height:40px;border-radius:11px;background:var(--ic);color:#0a0a0d;font-family:var(--mono);font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 16px color-mix(in srgb,var(--ic) 50%,transparent)}
+  .id-main{min-width:0;flex:1}
+  .id-name{font-weight:800;font-size:15px;color:#fff}
+  .id-cue{font-size:13px;color:#c7c7d2;margin-top:2px;line-height:1.45}
+  .id-quote{font-family:var(--mono);font-size:12px;color:var(--ic);margin-top:7px;background:rgba(255,255,255,.04);border-radius:8px;padding:6px 10px;line-height:1.5}
+
+  /* ===== DISC ===== */
+  .disc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;width:100%;max-width:560px}
+  .disc-q .q-mean{font-family:var(--mono);font-size:10.5px;color:var(--qc);font-weight:700;margin:2px 0 5px;letter-spacing:.2px}
+  .disc-q{
+    border-radius:18px;padding:20px;min-height:150px;position:relative;overflow:hidden;
+    border:1px solid color-mix(in srgb,var(--qc) 55%,transparent);
+    background:linear-gradient(160deg,color-mix(in srgb,var(--qc) 26%,#0b0b0f),#0a0a0d);
+    transition:.25s;
+  }
+  .disc-q:hover{transform:translateY(-4px);box-shadow:0 18px 40px color-mix(in srgb,var(--qc) 25%,transparent)}
+  .disc-q .ql{font-family:var(--mono);font-weight:800;font-size:40px;color:var(--qc);line-height:1}
+  .disc-q .qt{font-weight:800;font-size:18px;margin:6px 0 8px}
+  .disc-q .qd{color:#c9c9d4;font-size:13.5px;line-height:1.55}
+  .disc-q .qbadge{position:absolute;top:16px;left:16px;width:14px;height:14px;border-radius:50%;background:var(--qc);box-shadow:0 0 14px var(--qc)}
+
+  /* ===== סקאלת 5 מצבים ===== */
+  .states{display:flex;gap:8px;width:100%;max-width:620px;align-items:stretch}
+  .state-step{
+    flex:1;border-radius:14px;padding:14px 10px;text-align:center;position:relative;
+    background:linear-gradient(160deg,color-mix(in srgb,var(--sc) 22%,#0b0b0f),#0a0a0d);
+    border:1px solid color-mix(in srgb,var(--sc) 45%,transparent);
+    transition:.3s;
+  }
+  .state-step .sn{font-family:var(--mono);font-weight:800;font-size:22px;color:var(--sc)}
+  .state-step .st{font-size:12px;color:#d3d3dd;margin-top:6px;line-height:1.35;font-weight:600}
+  .state-step.hl{transform:translateY(-8px);box-shadow:0 16px 40px color-mix(in srgb,var(--sc) 38%,transparent);border-width:2px}
+  .state-arrow{display:flex;align-items:center;color:var(--muted-2);font-size:20px;font-weight:800}
+
+  /* ===== מדרגות 7 רקיעים ===== */
+  .stairs{display:flex;align-items:flex-end;gap:6px;width:100%;max-width:600px;height:300px}
+  .stair{
+    flex:1;border-radius:10px 10px 4px 4px;position:relative;
+    background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 60%,transparent),color-mix(in srgb,var(--accent) 18%,transparent));
+    border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+    display:flex;flex-direction:column;justify-content:flex-start;align-items:center;
+    padding:8px 4px;transition:.3s;
+  }
+  .stair:hover{filter:brightness(1.25)}
+  .stair .sr-ico{font-size:18px}
+  .stair .sr-n{font-family:var(--mono);font-weight:800;color:#fff;font-size:13px;margin-top:4px}
+  .stair .sr-t{font-size:10px;color:#eee;text-align:center;line-height:1.2;margin-top:4px;font-weight:600;opacity:.92}
+
+  /* ===== אם-אז ===== */
+  .ifthen{display:flex;flex-direction:column;gap:12px;width:100%;max-width:560px}
+  .it-row{
+    display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:stretch;
+  }
+  .it-if{
+    background:#101017;border:1px solid var(--line);border-radius:13px;padding:14px 15px;cursor:pointer;
+    transition:.22s;position:relative;
+  }
+  .it-if:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+  .it-if .lab{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:800;margin-bottom:6px;letter-spacing:1px}
+  .it-if .txt{font-size:14px;color:#e2e2ea;line-height:1.45;font-weight:600}
+  .it-if .hint{font-size:11px;color:var(--muted-2);margin-top:8px;display:flex;align-items:center;gap:5px}
+  .it-mid{display:flex;align-items:center;justify-content:center;color:var(--accent);font-size:22px;font-weight:900;opacity:.5;transition:.22s}
+  .it-then{
+    background:linear-gradient(160deg,color-mix(in srgb,var(--accent) 18%,#0b0b0f),#0a0a0d);
+    border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
+    border-radius:13px;padding:14px 15px;opacity:0;transform:translateX(-14px);
+    transition:.3s;display:flex;align-items:center;
+  }
+  .it-then .lab{font-family:var(--mono);font-size:11px;color:var(--accent);font-weight:800;margin-bottom:6px;letter-spacing:1px}
+  .it-then .txt{font-size:14px;color:#fff;line-height:1.45;font-weight:600}
+  .it-row.open .it-then{opacity:1;transform:none}
+  .it-row.open .it-mid{opacity:1;transform:scale(1.15)}
+  .it-row.open .it-if{border-color:color-mix(in srgb,var(--accent) 55%,transparent);background:#13131b}
+
+  /* ===== פער ויזואלי ===== */
+  .gap-art{width:100%;max-width:460px}
+  .gap-art svg{width:100%;height:auto;display:block;overflow:visible}
+
+  /* ===== יחס הקשבה ===== */
+  .ratio{width:100%;max-width:520px}
+  .ratio-bar{display:flex;height:90px;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+  .ratio-client{flex:0 0 70%;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 70%,#000),color-mix(in srgb,var(--accent) 40%,#000));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+  .ratio-you{flex:0 0 30%;background:#15151c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-right:1px solid var(--line)}
+  .ratio-pct{font-family:var(--mono);font-weight:800;font-size:34px;color:#fff}
+  .ratio-lab{font-size:13px;color:#eee;font-weight:700}
+  .ratio-you .ratio-lab{color:var(--muted)}
+  .ratio-note{margin-top:16px;color:#c7c7d2;font-size:14px;text-align:center}
+
+  /* ===== כפתורי חצים ===== */
+  .arrows{
+    position:fixed;bottom:22px;left:24px;display:flex;gap:10px;z-index:50;
+  }
+  .arrow-btn{
+    width:50px;height:50px;border-radius:14px;cursor:pointer;
+    background:rgba(16,16,22,.85);border:1px solid var(--line);backdrop-filter:blur(8px);
+    color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;
+    transition:.18s;
+  }
+  .arrow-btn:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 45%,transparent)}
+  .arrow-btn:disabled{opacity:.3;cursor:default;transform:none;background:rgba(16,16,22,.85);border-color:var(--line);box-shadow:none}
+
+  /* ===== מד התקדמות + מונה ===== */
+  .progress{position:fixed;top:0;right:0;left:0;height:4px;background:transparent;z-index:60}
+  .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#fff);transition:width .35s ease;box-shadow:0 0 14px var(--accent)}
+  .counter{
+    position:fixed;bottom:26px;right:calc(var(--sidebar-w) + 22px);z-index:50;
+    font-family:var(--mono);font-size:13px;color:var(--muted);
+    background:rgba(16,16,22,.7);border:1px solid var(--line);padding:6px 12px;border-radius:10px;backdrop-filter:blur(6px);
+  }
+  .counter b{color:#fff}
+
+  /* ===== כפתור תפריט (מובייל) ===== */
+  .menu-btn{
+    position:fixed;top:14px;right:14px;z-index:70;display:none;
+    width:46px;height:46px;border-radius:12px;background:rgba(16,16,22,.9);border:1px solid var(--line);
+    color:#fff;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;display:none}
+
+  /* ===== רספונסיב ===== */
+  @media(max-width:900px){
+    .topic-inner{grid-template-columns:1fr;text-align:right;gap:26px}
+    .t-art{order:-1}
+    .art-card{max-width:300px}
+    .sidebar{position:fixed;right:0;top:0;transform:translateX(100%);box-shadow:-10px 0 40px rgba(0,0,0,.6)}
+    .sidebar.open{transform:none}
+    .menu-btn{display:flex}
+    .scrim.open{display:block}
+    .counter{right:auto;left:24px;bottom:84px}
+    .arrows{bottom:18px;left:18px}
+  }
+  @media(max-width:560px){
+    .states{flex-direction:column}
+    .state-arrow{transform:rotate(90deg)}
+    .stairs{height:230px}
+    .stair .sr-t{display:none}
+  }
+
+  /* ===== כפתור עריכה ===== */
+  .edit-btn{
+    position:fixed;top:14px;left:14px;z-index:70;
+    display:flex;align-items:center;gap:6px;
+    padding:7px 13px;border-radius:10px;
+    background:rgba(16,16,22,.75);border:1px solid var(--line);
+    color:var(--muted);font-family:var(--font);font-size:12px;font-weight:700;
+    cursor:pointer;text-decoration:none;
+    backdrop-filter:blur(8px);transition:.18s;
+  }
+  .edit-btn:hover{color:#fff;border-color:var(--accent);background:rgba(212,0,106,.12)}
+  .edit-btn svg{opacity:.7;transition:.18s}
+  .edit-btn:hover svg{opacity:1}
+  @media(max-width:900px){.edit-btn{display:none}}
+
+  /* ===== גילוי שלב-אחר-שלב (מצגת קליקר) ===== */
+  .step-point{
+    opacity:0;transform:translateX(10px);
+    transition:opacity .4s ease,transform .4s cubic-bezier(.2,.7,.2,1);
+  }
+  .step-point.shown{opacity:1;transform:none}
+  .step-hint{
+    display:inline-flex;align-items:center;gap:6px;margin-top:12px;
+    font-family:var(--mono);font-size:11px;color:var(--muted2);
+    animation:blink 2s ease-in-out infinite;
+  }
+  @keyframes blink{0%,100%{opacity:.5}50%{opacity:1}}
+</style>
+</head>
+<body>
+
+<div class="progress"><div class="bar" id="progressBar"></div></div>
+<button class="menu-btn" id="menuBtn" aria-label="תפריט">☰</button>
+<a class="edit-btn" id="editBtn" href="/edit?l=1" title="ערוך תוכן" style="display:none">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  עריכה
+</a>
+<div class="scrim" id="scrim"></div>
+
+<div class="app">
+  <!-- סרגל צד -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <div class="mark">ח</div>
+        <div>
+          <div class="name">חופית וגוני</div>
+          <div class="sub">תורת המכירות · רמה 1</div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="nav-foot">ניווט: גלילה · חיצים ← → · לחיצה על שיעור</div>
+  </aside>
+
+  <!-- מסך ראשי -->
+  <main class="deck" id="deck"></main>
+</div>
+
+<div class="counter" id="counter"><b>01</b> / 01</div>
+<div class="arrows">
+  <button class="arrow-btn" id="prevBtn" aria-label="הקודם">→</button>
+  <button class="arrow-btn" id="nextBtn" aria-label="הבא">←</button>
+</div>
+
+<script>
+"use strict";
+
+/* ===================== הגדרת רמה ===================== */
+const LEVEL = 3;
+const LEVEL_CFG = {
+  1:{label:'רמה 1',sub:'למתחילים',kicker:'SALES MASTERY · LEVEL 1',file:'lessons.json'},
+  2:{label:'רמה 2',sub:'מתקדמים',kicker:'SALES MASTERY · LEVEL 2',file:'lessons-2.json'},
+  3:{label:'רמה 3',sub:'מומחים',kicker:'SALES MASTERY · LEVEL 3',file:'lessons-3.json'},
+};
+const lcfg = LEVEL_CFG[LEVEL] || LEVEL_CFG[1];
+
+/* ===================== נתוני הקורס ===================== */
+let LESSONS = [
+  {
+    n:1, title:"מהי מכירה באמת?", accent:"#D4006A", accentName:"ורוד",
+    topics:[
+      {t:"מי כאן איש מכירות?", icon:"person", discuss:true,
+        desc:"עצרו רגע — והרימו יד בלב: אתם רואים את עצמכם כאנשי מכירות?",
+        points:["רוב האנשים יענו 'ממש לא' — וזו בדיוק הטעות הגדולה.","עד סוף השיעור הזה — התשובה שלכם תשתנה."]},
+      {t:"כולם מוכרים — כל יום", icon:"people",
+        desc:"האמת הפשוטה: כולנו אנשי מכירות. אנחנו עושים את זה כל יום, רוב הזמן בלי לשים לב.",
+        points:["שכנעת חבר לאיזה סרט ללכת? מכרת.","ביקשת העלאה בשכר? מכרת את עצמך.","הורה שמשכנע ילד לאכול ירקות — מוכר.","מועמד בראיון עבודה — מוכר את עצמו.","ההבדל בין מצליחים לאחרים: מי עושה את זה במודע ובשיטה."]},
+      {t:"מכירה = פתרון בעיה", icon:"bulb",
+        desc:"אתה לא 'דוחף' מוצר — אתה פותר ללקוח כאב אמיתי.",
+        points:["לפני שמוכרים — מבינים מה הבעיה.","מי שמתמקד בבעיה של הלקוח, מוכר הרבה יותר.","המוצר הוא הגשר אל הפתרון, לא המטרה."]},
+      {t:"למה בעלי עסקים מפחדים למכור?", icon:"fear", discuss:true,
+        desc:"שאלה אליכם — לפני שנמשיך: למה לדעתכם כל כך הרבה בעלי עסקים מפחדים למכור? תנו תשובות.",
+        points:["חשבו רגע על עצמכם — מה עוצר אתכם?","אין כאן תשובה נכונה אחת — בואו נשמע אתכם."]},
+      {t:"אז ממה באמת מפחדים?", icon:"fear",
+        desc:"הפחד למכור עוצר יותר עסקים מכל סיבה אחרת. בואו נפרק אותו לגורמים.",
+        points:["פחד מדחייה ומ'לא'.","תחושת 'אני מטריד את האנשים'.","בלבול בין מכירה ל'לדחוף בכוח'.","האמת: אם המוצר שלך עוזר — לא למכור אותו זה לעשות עוול ללקוח."]},
+      {t:"האמת על מכירות", icon:"truth",
+        desc:"מכירה טובה זה לא לדבר יפה — זה להקשיב נכון.",
+        points:["הלקוח קונה רגש, ומצדיק בהיגיון.","אמון נבנה משאלות, לא ממונולוגים.","הביטחון שלך מדבק — בדיוק כמו חוסר הביטחון."]},
+    ]
+  },
+  {
+    n:2, title:"להכיר את הלקוח — מודל DISC", accent:"#2D7FF9", accentName:"כחול",
+    blurb:"4 סוגי לקוחות · D הבוס · I החברותי · S הזהיר · C המפקפק · איך מזהים את הסגנון",
+    topics:[
+      {t:"מבוא ל-DISC — 4 סוגי לקוחות", special:"disc",
+        desc:"כל לקוח מקבל החלטות אחרת. DISC מחלק אנשים ל-4 סגנונות — וברגע שאתה מזהה את הסגנון, אתה יודע איך לדבר אליו.",
+        points:["אותו משפט עובד על אחד ומפיל את השני.","המטרה: להתאים את הסגנון שלך אליו — לא להיפך."]},
+      {t:"D — הבוס", icon:"crown", accentOverride:"#EF4444",
+        desc:"D = Dominance · שליטה. אדום · תוצאות · שורה תחתונה · מהיר. רוצה לשלוט ולסיים מהר.",
+        points:["דבר תכל'ס, ישר לעניין.","תן לו תחושת שליטה והחלטה.","אל תבזבז את הזמן שלו במילים מיותרות."]},
+      {t:"I — החברותי", icon:"smiley", accentOverride:"#F5C518",
+        desc:"I = Influence · השפעה. צהוב · כיף · הכרה · חיבור. אוהב אנשים, אנרגיה והרגשה טובה.",
+        points:["הבא אנרגיה, חיוך וסיפורים.","תן לו הכרה ותחושת חשיבות.","בנה קשר אישי לפני שמדברים עסקים."]},
+      {t:"S — הזהיר", icon:"umbrella", accentOverride:"#2D7FF9",
+        desc:"S = Steadiness · יציבות. כחול · ביטחון · יציבות · תמיכה. שונא לחץ ושינויים פתאומיים.",
+        points:["סבלנות — תן לו זמן להחליט.","הצע ביטחונות, אחריות ותמיכה.","הרגע אותו: 'אנחנו איתך גם אחרי הקנייה'."]},
+      {t:"C — המפקפק", icon:"magnifier", accentOverride:"#16B981",
+        desc:"C = Conscientiousness · דייקנות. ירוק · נתונים · דיוק · היגיון. רוצה הוכחות לפני שהוא קונה.",
+        points:["הבא עובדות, מספרים ונתונים.","היה מדויק — הוא יתפוס כל סתירה.","תן לו זמן לבדוק ולאמת."]},
+      {t:"איך מזהים את הסגנון", special:"identify", share:true,
+        desc:"מזהים את הסגנון לפי קצב הדיבור, סוג השאלות, וכמה הלקוח מספר על עצמו. הנה הסימנים והדוגמאות שיעזרו לכם לזהות כל סוג:",
+        points:["הקשיבו לקצב — מהיר או רגוע?","שימו לב לשאלות — תכל'ס או רגשיות?","ככל שתתאמנו, תזהו מהר יותר."]},
+    ]
+  },
+  {
+    n:3, title:"5 מצבי התודעה של הליד", accent:"#16B981", accentName:"ירוק",
+    blurb:"סקאלת המודעות · מ'לא מודע לבעיה' ועד 'רוצה אותך'",
+    topics:[
+      {t:"סקאלת 5 מצבי התודעה", special:"statesScale", highlight:-1,
+        desc:"לכל ליד יש 'מצב תודעה' — כמה הוא מודע לבעיה, לפתרון, ולך. תפקידך לזהות את המצב ולקדם אותו שלב אחד קדימה.",
+        points:["אל תמכור למצב 1 כאילו הוא מצב 5.","כל שיחה מטרתה לקדם שלב אחד בסקאלה."]},
+      {t:"מצב 1 — לא מודע לבעיה", special:"statesScale", highlight:0,
+        desc:"הוא בכלל לא יודע שיש לו בעיה. למכור לו עכשיו = להישרף.",
+        points:["תפקידך: להאיר את הבעיה בעדינות.","שאלות שמעוררות מחשבה — לא מצגת מכירה.","סבלנות: הוא רחוק מהחלטה."]},
+      {t:"מצב 2 — מודע לבעיה, לא לפתרון", special:"statesScale", highlight:1,
+        desc:"הוא מרגיש שכואב, אבל לא יודע שיש בכלל פתרון.",
+        points:["תפקידך: להראות שיש דרך החוצה.","הגדל את המודעות לעלות של אי-הפעולה.","תן תקווה — לא לחץ."]},
+      {t:"מצב 3 — מודע לפתרון, לא יודע איזה", special:"statesScale", highlight:2,
+        desc:"הוא יודע שיש פתרונות, אבל מתלבט באיזה סוג לבחור.",
+        points:["תפקידך: לחנך ולכוון.","הסבר את ההבדלים בין סוגי הפתרונות.","מקם את הקטגוריה שלך כנכונה ביותר."]},
+      {t:"מצב 4 — יודע מה רוצה, לא יודע במי", special:"statesScale", highlight:3,
+        desc:"הוא כבר יודע איזה פתרון רוצה — נשאר לבחור ספק.",
+        points:["תפקידך: לבדל את עצמך מהמתחרים.","הדגש יתרון ייחודי, אמינות והוכחות.","זה השלב שבו 'למה דווקא אתה' מנצח."]},
+      {t:"מצב 5 — רוצה אותך", special:"statesScale", highlight:4,
+        desc:"הוא כבר רוצה אותך — צריך רק דחיפה אחרונה לסגירה.",
+        points:["תפקידך: להקל ולפשט את הסגירה.","הסר חיכוכים: תשלום, תהליך, מועד.","אל תמכור יותר מדי — פשוט סגור."]},
+    ]
+  },
+  {
+    n:4, title:"הקשבה אקטיבית", accent:"#F59E0B", accentName:"כתום",
+    blurb:"להקשיב כדי להבין · 70/30 · דוגמאות טובות ורעות",
+    topics:[
+      {t:"מה זה הקשבה אקטיבית?", icon:"ear",
+        desc:"הקשבה אקטיבית = להקשיב כדי להבין, לא כדי לענות. זה הכלי שבונה אמון מהר יותר מכל טכניקה.",
+        points:["שאל שאלות פתוחות.","שקף בחזרה את מה ששמעת ('אז אתה אומר ש...').","תן לשתיקה לעבוד — אל תמלא כל רגע."]},
+      {t:"הלקוח מדבר 70% — אתם 30%", special:"ratio",
+        desc:"כלל הזהב: בשיחת מכירה טובה הלקוח מדבר רוב הזמן. ככל שהוא מדבר יותר — אתה לומד יותר.",
+        points:["יותר מידע = יותר נקודות חיבור.","הלקוח שמדבר מרגיש שמקשיבים לו.","שתיקה היא כלי מכירה — לא מבוכה."]},
+      {t:"דוגמאות טובות ורעות", icon:"examples", share:true,
+        desc:"נשווה שיחה שבה מקשיבים באמת מול שיחה שבה רק מחכים לתור לדבר.",
+        points:["רע: 'יש לנו את המוצר הכי טוב בשוק!' (מונולוג).","טוב: 'ספר לי — מה הכי מתסכל אותך כרגע?'","טוב: לחזור על מילים של הלקוח כדי להראות הקשבה."]},
+    ]
+  },
+  {
+    n:5, title:"שיטת שבעת הרקיעים", accent:"#8B5CF6", accentName:"סגול",
+    blurb:"מפה מלאה של שיחת מכירה — מהפתיחה ועד פתרון ההתלבטויות",
+    topics:[
+      {t:"מפת השיטה — 7 הרקיעים", special:"stairs",
+        desc:"שבעת הרקיעים הם מפת הדרך של שיחת מכירה מושלמת — עולים שלב-שלב מהפתיחה ועד הסגירה. כל רקיע מכין את הקרקע לבא אחריו.",
+        points:["אל תדלג על רקיעים — הסדר הוא הכוח.","כל רקיע מעמיק את האמון ואת הערך."]},
+      {t:"רקיע 1 — פתיחת שיחה", icon:"door",
+        desc:"הרושם הראשוני נקבע ב-7 השניות הראשונות. הטון, החיוך-בקול והביטחון שלך עושים את ההבדל.",
+        points:["חייך — זה נשמע גם בטלפון.","דבר ברור, רגוע ובטוח.","פתיחה חמה פותחת אוזניים."],
+        examples:["שלום [שם], מדבר/ת [שמך] מ[העסק] — תפסתי אותך בזמן טוב?","היי [שם], אני יודע/ת שאתה עסוק אז אקח רק דקה — בסדר?"]},
+      {t:"רקיע 2 — בירור קצר וחיבור", icon:"link",
+        desc:"לפני העסקים — בונים חיבור אנושי קצר. מוצאים נקודה משותפת ששוברת את הקרח.",
+        points:["שאלה קלה על העסק או על היום שלו.","מצא נקודת חיבור אמיתית.","אנשים קונים מאנשים שהם מחבבים."],
+        examples:["ספר לי קצת — כמה זמן אתה כבר בתחום הזה?","ראיתי שאתם עוסקים ב[X] — איך הגעת לזה בכלל?"]},
+      {t:"רקיע 3 — כנות ומטרת השיחה", icon:"compass",
+        desc:"אומרים בכנות למה התקשרת ומה המטרה. השקיפות הזו בונה אמון מיידי.",
+        points:["אמרו בפתיחות למה התקשרתם.","בלי מניפולציות — כנות מוכרת.","הציבו ציפיות לשיחה."],
+        examples:["התקשרתי אליך מאחר ו[סיבה ברורה], ורציתי לבדוק אם זה רלוונטי עבורך.","אהיה איתך כן/ה — המטרה שלי היא לבדוק אם נוכל לעזור, ואם לא, נגיד את זה בפתיחות."]},
+      {t:"רקיע 4 — בירור עמוק והצפת כאב", icon:"dig",
+        desc:"כאן נכנסים לעומק. אל תסתפקו בתשובה הראשונה — חפרו עוד שאלה, וגלו את המחיר האמיתי של אי-הפעולה.",
+        points:["שאלו 'כמה זה עולה לך?' — גם בכסף וגם בזמן.","אל תעצרו בתשובה הראשונה — שאלו עוד: 'ולמה דווקא זה מפריע לך?'","ככל שהכאב ברור יותר — הערך שלכם גדול יותר."],
+        examplesLabel:"שאלה לדוגמה",
+        examples:["אמרת שאין מספיק לידים — כמה הכנסות אתה מפסיד בחודש בגלל זה?","וכמה זמן זה כבר ככה? איך זה משפיע על שאר העסק?","אם זה לא ישתנה בשנה הקרובה — איפה אתה רואה את העסק שלך?"]},
+      {t:"רקיע 5 — יצירת פער והצגת מוצר", special:"gap",
+        desc:"מראים את הפער בין המצב הנוכחי למצב הרצוי — והמוצר שלך הוא הגשר. מציגים אותו בתועלות, לא בתכונות.",
+        points:["צייר את 'איפה אתה' מול 'איפה אתה רוצה להיות'.","המוצר = הגשר שסוגר את הפער.","דבר בתועלות לפי מה שהלקוח סיפר."],
+        examples:["על פי מה שסיפרת — נחסוך לך 5 שעות שבועיות ונגדיל את אחוז הסגירה שלך.","תאר לעצמך שבמקום לרדוף אחרי לקוחות — הם פונים אליך. כמה זה שווה לך?"]},
+      {t:"רקיע 6 — סגירה ופתרונות תשלום", icon:"handshake",
+        desc:"מבקשים את הסגירה בביטחון — בלי לרמז. במקום לשאול 'אז מה אתה אומר?', אומרים ישירות מה השלב הבא ומתחילים.",
+        points:["אל תסיים ב'תחשוב על זה' — הובל לפעולה: 'בוא נתחיל, אני שולח לך פרטים'.","הצע פריסה לתשלומים כדי להוריד את המחסום.","שתוק אחרי שאלת הסגירה — תן ללקוח לענות."],
+        examples:["אז בוא נתחיל — אני שולח לך עכשיו את הפרטים. נוח לך בכרטיס או בהעברה?","אפשר לפרוס את זה לתשלומים נוחים — זה עוזר לך להחליט?","מתי נוח לך שנתחיל — השבוע או בשבוע הבא?"]},
+      {t:"רקיע 7 — פתרון התלבטויות", special:"ifthen", pairs:[
+          {if:'"אני צריך להתייעץ עם בן/בת הזוג"', then:'"מצוין — מה הדבר שהכי חשוב שיהיה לו/לה מענה עליו?"'},
+          {if:'"אני צריך לחשוב על זה"', then:'"בטח. על מה בדיוק נחשוב? מה עוד לא ברור עד הסוף?"'},
+          {if:'"תשלח לי במייל ואחזור אליך"', then:'"בשמחה אשלח. רק שלא ניפגש שוב בעוד חודש על אותו דבר — מה הנקודה האחת שצריכה להופיע שם כדי שתגיד כן?"'},
+          {if:'"אין לי תקציב כרגע"', then:'"מבין. אם התקציב לא היה מכשול — היית מתקדם? אז בוא נדבר על פריסה."'},
+        ],
+        desc:"כל התלבטות היא בקשה לעוד ביטחון. כלי ה'אם... אז...' הופך כל התנגדות לשאלה שמקדמת לסגירה — בלי להתווכח.",
+        points:["מאחורי כל 'לא' מסתתרת שאלה — לא סירוב.","אל תתווכח — אשרו את ההתלבטות, ואז שאלו שאלה שמקדמת.","כלי הזהב לכל התנגדות: 'אני מבין. רק שאדע — אם נפתור את זה, נתקדם?'"]},
+    ]
+  },
+  {
+    n:6, title:"ההתנגדות הישראלית הכי נפוצה", accent:"#EF4444", accentName:"אדום",
+    blurb:"מה אתם חושבים שהיא?",
+    topics:[
+      {t:"'זה יקר לי' — מה הוא באמת אומר", icon:"price",
+        desc:"'יקר' זה כמעט אף פעם לא על הכסף. ברוב המקרים זה אומר: 'עוד לא ראיתי מספיק ערך'.",
+        points:["'יקר ביחס למה?' — תמיד יש השוואה נסתרת.","המשמעות: הערך עדיין לא ברור לו.","אל תוריד מחיר — תעלה ערך."],
+        copy:{label:"שיעור 6 · כלי 'זה יקר לי'", text:'אם יכולנו לפתור לך את בעיית [X], היית מוכן להתקדם?'}},
+      {t:"כלי 1 — מינימום/מקסימום", icon:"divide",
+        desc:"מפרקים את המחיר ליחידות קטנות שקל לעכל אותן.",
+        points:["'זה יוצא פחות מ-X ביום.'","הופך סכום מאיים לזניח.","ממקד את הלקוח בערך היומי, לא בסכום הכולל."]},
+      {t:"כלי 2 — השוואת עלות/תועלת", icon:"scale",
+        desc:"שמים על הכף את מחיר הפתרון מול המחיר של להישאר במצב הנוכחי.",
+        points:["'מה עולה לך לא לפתור את זה?'","התועלת לרוב גדולה בהרבה מהעלות.","הלקוח רואה את העסקה — לא רק את ההוצאה."]},
+      {t:"כלי 3 — 'אם... אז...'", special:"ifthen", pairs:[
+          {if:'"המחיר היה מתאים לי"', then:'"היית מתקדם איתי כבר היום?"'},
+          {if:'"היינו פותרים לך את בעיית הזמן"', then:'"זה בדיוק מה שחיפשת, נכון?"'},
+        ],
+        desc:"כלי ה'אם-אז' מבודד את ההתנגדות האמיתית. אם הלקוח אומר כן ל'אם' — גילית שזו ההתנגדות היחידה, ואפשר לטפל בה. לחצו לגילוי.",
+        points:["מבודד את ההתנגדות האמיתית.","חושף אם 'יקר' זו הסיבה — או תירוץ.","הופך 'לא' ל'כן, אם...'."]},
+    ]
+  },
+  {
+    n:7, title:"סיכום ומשימה", accent:"#D4AF37", accentName:"זהב",
+    blurb:"מה לקחתם הביתה · המשימות שלכם",
+    topics:[
+      {t:"מה לקחתם הביתה", icon:"trophy",
+        desc:"עברנו דרך שלמה — ממה זו מכירה, דרך הכרת הלקוח, ועד שיטה מלאה לשיחת מכירה.",
+        points:["מכירה = פתרון בעיה, לא דחיפה.","DISC ו-5 מצבי התודעה: לדבר בשפת הלקוח.","הקשבה אקטיבית + שבעת הרקיעים = שיחה שמובילה לסגירה.","'אם-אז' מפרק כל התנגדות."]},
+      {t:"המשימות שלכם", icon:"target", share:true,
+        desc:"היישום הוא מה שהופך ידע לכסף. קחו את הכלים האלה אל השיחות האמיתיות שלכם:",
+        points:["נהלו שיחות מכירה לפי שבעת הרקיעים.","זהו את סגנון ה-DISC של כל לקוח.","תרגלו את כלי 'אם-אז' על התנגדות אמיתית.","רשמו אחרי כל שיחה: מה עבד, מה לא, ומה תשנו."]},
+    ]
+  },
+];
+if(LEVEL > 1) LESSONS = [];
+
+/* ===================== אייקוני SVG ===================== */
+const A = "var(--accent)";
+function svgWrap(inner, extra){
+  return '<svg viewBox="0 0 120 120" class="'+(extra||'')+'" fill="none" stroke-linecap="round" stroke-linejoin="round">'+inner+'</svg>';
+}
+const ICONS = {
+  person:()=>svgWrap('<circle cx="60" cy="40" r="18" stroke="'+A+'" stroke-width="3" class="pulse"/><path d="M28 96c0-18 14-30 32-30s32 12 32 30" stroke="'+A+'" stroke-width="3"/><circle cx="60" cy="40" r="6" fill="'+A+'"/>','float'),
+  people:()=>svgWrap('<circle cx="36" cy="40" r="14" stroke="'+A+'" stroke-width="2.5"/><path d="M22 72c0-14 6-22 14-22s14 8 14 22" stroke="'+A+'" stroke-width="2.5"/><path d="M54 30h34a5 5 0 0 1 5 5v14a5 5 0 0 1-5 5H58l-7 7 2-7h1a5 5 0 0 1-5-5V35a5 5 0 0 1 5-5z" stroke="'+A+'" stroke-width="2.2" fill="none" class="pulse"/><path d="M60 38h22M60 45h14" stroke="'+A+'" stroke-width="2" opacity=".65"/><circle cx="92" cy="42" r="10" stroke="'+A+'" stroke-width="2.2" opacity=".75"/><path d="M82 72c0-12 4-18 10-18s10 6 10 18" stroke="'+A+'" stroke-width="2.2" opacity=".75"/>','float'),
+  bulb:()=>svgWrap('<circle cx="26" cy="56" r="17" stroke="'+A+'" stroke-width="2.5" opacity=".72"/><path d="M19 49l14 14M33 49l-14 14" stroke="'+A+'" stroke-width="2.5"/><path d="M45 56h30" stroke="'+A+'" stroke-width="2" stroke-dasharray="4 3" class="dash"/><path d="M70 48l9 8-9 8" fill="none" stroke="'+A+'" stroke-width="2.5"/><circle cx="94" cy="56" r="17" stroke="'+A+'" stroke-width="2.5" class="pulse"/><path d="M85 56l7 7 13-14" stroke="'+A+'" stroke-width="2.5" fill="none"/>','float'),
+  fear:()=>svgWrap('<circle cx="60" cy="78" r="12" stroke="'+A+'" stroke-width="2.5"/><path d="M48 106c0-12 5-18 12-18s12 6 12 18" stroke="'+A+'" stroke-width="2.5"/><circle cx="56" cy="60" r="2.5" stroke="'+A+'" stroke-width="1.5" fill="none" class="pulse"/><circle cx="51" cy="52" r="3.5" stroke="'+A+'" stroke-width="1.5" fill="none"/><path d="M60 14 C48 14 40 20 38 29 C34 29 30 34 32 39 C26 40 26 49 32 50 C40 52 80 52 86 50 C92 49 92 40 86 39 C88 34 84 28 78 27 C76 17 68 14 60 14Z" stroke="'+A+'" stroke-width="2.5" fill="none"/><path d="M50 30l14 14M64 30l-14 14" stroke="'+A+'" stroke-width="2.5" class="pulse"/>','float'),
+  truth:()=>svgWrap('<path d="M14 60s18-30 46-30 46 30 46 30-18 30-46 30S14 60 14 60Z" stroke="'+A+'" stroke-width="2.5"/><circle cx="60" cy="60" r="16" stroke="'+A+'" stroke-width="2.5"/><path d="M60 58 C60 54 55 53 55 57 C55 61 60 65 60 65 C60 65 65 61 65 57 C65 53 60 54 60 58Z" fill="'+A+'" class="pulse"/>','float'),
+  crown:()=>svgWrap('<path d="M24 84h72M24 84 18 42l22 16 20-30 20 30 22-16-6 42" stroke="'+A+'" stroke-width="3"/><circle cx="18" cy="40" r="5" fill="'+A+'"/><circle cx="102" cy="40" r="5" fill="'+A+'"/><circle cx="60" cy="26" r="5" fill="'+A+'"/>','float'),
+  smiley:()=>svgWrap('<circle cx="60" cy="58" r="38" stroke="'+A+'" stroke-width="3"/><circle cx="46" cy="50" r="4" fill="'+A+'"/><circle cx="74" cy="50" r="4" fill="'+A+'"/><path d="M42 68c5 9 13 13 18 13s13-4 18-13" stroke="'+A+'" stroke-width="3.5"/>','float'),
+  umbrella:()=>svgWrap('<path d="M60 22v8M22 56c4-20 19-30 38-30s34 10 38 30c-8-6-14-6-19 0-5-6-13-6-19 0-6-6-14-6-19 0-5-6-11-6-19 0Z" stroke="'+A+'" stroke-width="3"/><path d="M60 56v34a10 10 0 0 0 20 0" stroke="'+A+'" stroke-width="3"/>','float'),
+  magnifier:()=>svgWrap('<circle cx="52" cy="52" r="28" stroke="'+A+'" stroke-width="3"/><path d="M72 72l24 24" stroke="'+A+'" stroke-width="4"/><path d="M44 52h16M52 44v16" stroke="'+A+'" stroke-width="2.5" class="pulse"/>','float'),
+  scan:()=>svgWrap('<rect x="26" y="26" width="68" height="68" rx="12" stroke="'+A+'" stroke-width="3"/><circle cx="60" cy="56" r="11" stroke="'+A+'" stroke-width="3"/><path d="M44 84c2-9 8-13 16-13s14 4 16 13" stroke="'+A+'" stroke-width="3"/><path d="M26 60h68" stroke="'+A+'" stroke-width="2.5" class="dash"/>','float'),
+  ear:()=>svgWrap('<path d="M10 60 Q18 50 18 60 Q18 70 10 60" stroke="'+A+'" stroke-width="2.2" fill="none" opacity=".45"/><path d="M4 60 Q15 44 15 60 Q15 76 4 60" stroke="'+A+'" stroke-width="2.2" fill="none" opacity=".65" class="pulse"/><path d="M20 59h14" stroke="'+A+'" stroke-width="1.5" stroke-dasharray="3 3" class="dash" opacity=".6"/><path d="M44 96c-2-12-12-16-16-28-6-18 4-40 28-40 20 0 30 14 30 30 0 14-12 16-12 28a12 12 0 0 1-24 0" stroke="'+A+'" stroke-width="2.5"/><path d="M50 52c0-8 5-12 12-12s10 6 8 12c-3 8-10 6-10 16" stroke="'+A+'" stroke-width="2.5" class="pulse"/>','float'),
+  examples:()=>svgWrap('<rect x="20" y="30" width="44" height="32" rx="8" stroke="#16B981" stroke-width="3"/><path d="M30 72l-6 12 14-6" stroke="#16B981" stroke-width="3"/><rect x="60" y="58" width="44" height="32" rx="8" stroke="#EF4444" stroke-width="3"/><path d="M96 100l8 8M104 100l-8 8" stroke="#EF4444" stroke-width="2.5" opacity=".7"/><path d="M34 44l6 6 10-12" stroke="#16B981" stroke-width="3"/>','float'),
+  door:()=>svgWrap('<rect x="32" y="16" width="56" height="84" rx="4" stroke="'+A+'" stroke-width="2.5"/><path d="M24 100h72" stroke="'+A+'" stroke-width="2.5"/><path d="M53 16C51 28 49 44 49 58C49 72 51 86 53 100" stroke="'+A+'" stroke-width="2" opacity=".5"/><circle cx="72" cy="60" r="5" fill="'+A+'" class="pulse"/><path d="M50 28L30 16M50 50L24 50M50 72L30 84" stroke="'+A+'" stroke-width="2.5" opacity=".55" class="pulse"/>','float'),
+  link:()=>svgWrap('<path d="M52 44 40 56a16 16 0 0 0 22 22l8-8" stroke="'+A+'" stroke-width="3.5"/><path d="M68 76l12-12a16 16 0 0 0-22-22l-8 8" stroke="'+A+'" stroke-width="3.5"/><path d="M50 70l20-20" stroke="'+A+'" stroke-width="3" class="pulse"/>','float'),
+  compass:()=>svgWrap('<circle cx="60" cy="60" r="38" stroke="'+A+'" stroke-width="3"/><path d="M60 60 76 44 68 68 44 76 52 52Z" stroke="'+A+'" stroke-width="2.5" fill="none" class="spin-slow"/><circle cx="60" cy="60" r="4" fill="'+A+'"/>'),
+  dig:()=>svgWrap('<path d="M16 34h88M16 54h88M16 74h88" stroke="'+A+'" stroke-width="1.5" opacity=".3"/><path d="M60 14v68" stroke="'+A+'" stroke-width="3" class="dash"/><path d="M51 82L60 96L69 82" fill="none" stroke="'+A+'" stroke-width="3"/><circle cx="60" cy="34" r="4" fill="'+A+'" opacity=".4"/><circle cx="60" cy="54" r="4" fill="'+A+'" opacity=".65"/><circle cx="60" cy="74" r="4" fill="'+A+'" class="pulse"/>','float'),
+  handshake:()=>svgWrap('<path d="M14 65L46 61" stroke="'+A+'" stroke-width="5" stroke-linecap="round" opacity=".6"/><path d="M106 55L74 59" stroke="'+A+'" stroke-width="5" stroke-linecap="round" opacity=".6"/><path d="M46 61L52 51M46 61L52 61M46 61L52 71" stroke="'+A+'" stroke-width="3" stroke-linecap="round"/><path d="M74 59L68 49M74 59L68 59M74 59L68 69" stroke="'+A+'" stroke-width="3" stroke-linecap="round"/><circle cx="60" cy="60" r="10" stroke="'+A+'" stroke-width="2.5" fill="none" class="pulse"/><path d="M55 40L60 32L65 40" stroke="'+A+'" stroke-width="2" class="pulse"/>','float'),
+  price:()=>svgWrap('<path d="M58 24 30 30l-6 28 40 40 34-34-40-40Z" stroke="'+A+'" stroke-width="3"/><circle cx="44" cy="46" r="6" stroke="'+A+'" stroke-width="3"/><path d="M58 64h18M58 76h12" stroke="'+A+'" stroke-width="3" class="pulse"/>','float'),
+  divide:()=>svgWrap('<path d="M30 60h60" stroke="'+A+'" stroke-width="4"/><circle cx="60" cy="40" r="6" fill="'+A+'"/><circle cx="60" cy="80" r="6" fill="'+A+'"/><rect x="22" y="22" width="76" height="76" rx="14" stroke="'+A+'" stroke-width="2.5" opacity=".5"/>','float'),
+  scale:()=>svgWrap('<path d="M60 22v76M34 98h52" stroke="'+A+'" stroke-width="3"/><path d="M26 38h68" stroke="'+A+'" stroke-width="3"/><path d="M26 38 14 64a14 12 0 0 0 24 0L26 38Z" stroke="'+A+'" stroke-width="2.5"/><path d="M94 38 82 64a14 12 0 0 0 24 0L94 38Z" stroke="'+A+'" stroke-width="2.5"/><circle cx="60" cy="30" r="5" fill="'+A+'"/>','float'),
+  trophy:()=>svgWrap('<path d="M40 26h40v18a20 20 0 0 1-40 0V26Z" stroke="'+A+'" stroke-width="3"/><path d="M40 32H26c0 14 8 20 16 20M80 32h14c0 14-8 20-16 20" stroke="'+A+'" stroke-width="3"/><path d="M52 64v14M68 64v14M44 92h32" stroke="'+A+'" stroke-width="3"/><path d="M50 38L56 44L60 38L64 44L70 38" stroke="'+A+'" stroke-width="2" class="pulse" fill="none"/><path d="M40 18L44 22M80 18L76 22M60 14v6" stroke="'+A+'" stroke-width="2.5" class="pulse"/>','float'),
+  target:()=>svgWrap('<circle cx="60" cy="60" r="38" stroke="'+A+'" stroke-width="3"/><circle cx="60" cy="60" r="24" stroke="'+A+'" stroke-width="3" opacity=".7"/><circle cx="60" cy="60" r="9" fill="'+A+'" class="pulse"/><path d="M60 60 100 20M88 24l1 9 9 1" stroke="'+A+'" stroke-width="3"/>','float'),
+};
+function iconFor(name){ return (ICONS[name]||ICONS.bulb)(); }
+
+/* ===================== מבנה שקופיות ===================== */
+const slides = [];
+slides.push({kind:"cover"});
+LESSONS.forEach((les,li)=>{
+  slides.push({kind:"lessonIntro", li});
+  les.topics.forEach((tp,ti)=>{ slides.push({kind:"topic", li, ti}); });
+});
+
+/* ===================== רינדור ===================== */
+const deck = document.getElementById("deck");
+const navEl = document.getElementById("nav");
+
+function el(html){ const t=document.createElement("template"); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+let copyCounter = 0;
+
+function renderCover(){
+  const s = el('<section class="slide cover" data-accent="#D4006A"><div class="glow"></div><div class="grid-bg"></div></section>');
+  s.style.setProperty("--accent","#D4006A");
+  s.insertAdjacentHTML("beforeend", `
+    <div class="big-mark reveal">ח</div>
+    <div class="kicker reveal d1">${lcfg.kicker}</div>
+    <h1 class="reveal d2">ברוכים הבאים<br/>ל<span class="pinkword">תורת המכירות</span></h1>
+    <div class="crumb reveal d3"><b>${lcfg.label}</b><span class="sep">|</span><b>${lcfg.sub}</b><span class="sep">|</span><b>חופית וגוני</b></div>
+    <div class="scroll-hint reveal d4">גללו למטה כדי להתחיל<div class="chev"></div></div>
+  `);
+  return s;
+}
+
+function renderLessonIntro(li){
+  const les = LESSONS[li];
+  const s = el('<section class="slide lesson-intro"><div class="glow"></div><div class="grid-bg"></div></section>');
+  s.style.setProperty("--accent", les.accent);
+  const blurb = les.blurb ? `<div class="l-topics reveal d3">${esc(les.blurb)}</div>` : "";
+  s.insertAdjacentHTML("beforeend", `
+    <div class="l-tag reveal">שיעור ${les.n}</div>
+    <div class="l-num reveal d1">0${les.n}</div>
+    <h2 class="reveal d2">${esc(les.title)}</h2>
+    ${blurb}
+  `);
+  return s;
+}
+
+function buildArt(les, tp){
+  if(tp.special==="disc") return buildDisc();
+  if(tp.special==="statesScale") return buildStates(tp.highlight);
+  if(tp.special==="stairs") return buildStairs(les.accent);
+  if(tp.special==="gap") return buildGap();
+  if(tp.special==="ifthen") return buildIfThen(tp.pairs);
+  if(tp.special==="ratio") return buildRatio();
+  if(tp.special==="identify") return buildIdentify();
+  // אייקון רגיל בכרטיס
+  return `<div class="art-card">${iconFor(tp.icon)}</div>`;
+}
+
+function buildDisc(){
+  const q=[
+    {l:"D",eng:"Dominance",heb:"שליטה",t:"הבוס",d:"תוצאות · שורה תחתונה · מהיר",c:"#EF4444"},
+    {l:"I",eng:"Influence",heb:"השפעה",t:"החברותי",d:"כיף · הכרה · חיבור",c:"#F5C518"},
+    {l:"S",eng:"Steadiness",heb:"יציבות",t:"הזהיר",d:"ביטחון · יציבות · תמיכה",c:"#2D7FF9"},
+    {l:"C",eng:"Conscientiousness",heb:"דייקנות",t:"המפקפק",d:"נתונים · דיוק · היגיון",c:"#16B981"},
+  ];
+  return '<div class="disc-grid">'+q.map(x=>(
+    `<div class="disc-q" style="--qc:${x.c}"><div class="qbadge"></div><div class="ql">${x.l}</div><div class="q-mean">${x.eng} · ${x.heb}</div><div class="qt">${x.t}</div><div class="qd">${x.d}</div></div>`
+  )).join("")+'</div>';
+}
+
+function buildStates(hl){
+  const steps=[
+    {n:"1",t:"לא מודע לבעיה",c:"#64748b"},
+    {n:"2",t:"מודע לבעיה",c:"#F59E0B"},
+    {n:"3",t:"מודע לפתרון",c:"#16B981"},
+    {n:"4",t:"יודע מה רוצה",c:"#2D7FF9"},
+    {n:"5",t:"רוצה אותך",c:"#D4006A"},
+  ];
+  let html='<div class="states">';
+  steps.forEach((s,i)=>{
+    html+=`<div class="state-step ${i===hl?'hl':''}" style="--sc:${s.c}"><div class="sn">${s.n}</div><div class="st">${s.t}</div></div>`;
+    if(i<steps.length-1) html+='<div class="state-arrow">←</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+function buildStairs(accent){
+  const r=[
+    {i:"📞",t:"פתיחה"},{i:"🤝",t:"חיבור"},{i:"🎯",t:"מטרה"},{i:"🔍",t:"בירור"},
+    {i:"🌉",t:"פער"},{i:"✍️",t:"סגירה"},{i:"💡",t:"התלבטות"},
+  ];
+  let html='<div class="stairs">';
+  // RTL: רקיע 1 מימין ונמוך, רקיע 7 משמאל וגבוה
+  for(let k=r.length-1;k>=0;k--){
+    const h=30+(k)*(100/r.length);
+    html+=`<div class="stair" style="height:${h}%"><div class="sr-ico">${r[k].i}</div><div class="sr-n">${k+1}</div><div class="sr-t">${r[k].t}</div></div>`;
+  }
+  html+='</div>';
+  return html;
+}
+
+function buildGap(){
+  return `<div class="gap-art"><svg viewBox="0 0 360 300" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <!-- בסיס -->
+    <path d="M20 250h320" stroke="var(--accent)" stroke-width="2" opacity=".3"/>
+    <!-- דמות קטנה - הלקוח -->
+    <g transform="translate(300,170)">
+      <circle cx="0" cy="0" r="12" stroke="var(--accent)" stroke-width="3"/>
+      <path d="M-12 50c0-12 5-22 12-22s12 10 12 22" stroke="var(--accent)" stroke-width="3"/>
+      <text x="0" y="74" fill="#c7c7d2" font-size="13" font-family="Heebo" font-weight="700" text-anchor="middle">הלקוח</text>
+    </g>
+    <!-- דמות גדולה - אתה -->
+    <g transform="translate(60,40)">
+      <circle cx="0" cy="0" r="22" stroke="var(--accent)" stroke-width="4"/>
+      <path d="M-24 96c0-22 10-40 24-40s24 18 24 40" stroke="var(--accent)" stroke-width="4"/>
+      <circle cx="0" cy="0" r="7" fill="var(--accent)"/>
+      <text x="0" y="124" fill="#fff" font-size="15" font-family="Heebo" font-weight="800" text-anchor="middle">אתה</text>
+    </g>
+    <!-- חץ-גשר עולה -->
+    <path d="M285 168 C 220 150, 150 110, 95 78" stroke="var(--accent)" stroke-width="3" stroke-dasharray="7 9" class="dash"/>
+    <path d="M95 78 l 14 2 -4 -13" fill="none" stroke="var(--accent)" stroke-width="3"/>
+    <rect x="120" y="120" width="120" height="34" rx="17" fill="rgba(212,0,106,.12)" stroke="var(--accent)" stroke-width="1.5"/>
+    <text x="180" y="142" fill="#fff" font-size="14" font-family="Heebo" font-weight="800" text-anchor="middle">הגשר = הפתרון שלך</text>
+  </svg></div>`;
+}
+
+function buildRatio(){
+  return `<div class="ratio">
+    <div class="ratio-bar">
+      <div class="ratio-client"><div class="ratio-pct">70%</div><div class="ratio-lab">הלקוח מדבר</div></div>
+      <div class="ratio-you"><div class="ratio-pct">30%</div><div class="ratio-lab">אתם</div></div>
+    </div>
+    <div class="ratio-note">ככל שהלקוח מדבר יותר — אתם לומדים יותר ומוכרים טוב יותר</div>
+  </div>`;
+}
+
+function buildIdentify(){
+  const rows=[
+    {l:"D",c:"#EF4444",name:"D — הבוס (Dominance)",cue:"מהיר, ישיר, חסר סבלנות לפרטים.",q:'"כמה זה עולה ומתי אפשר להתחיל?"'},
+    {l:"I",c:"#F5C518",name:"I — החברותי (Influence)",cue:"מדבר הרבה, חם, מספר סיפורים וצוחק.",q:'"וואו נשמע מעולה! ספר לי עוד עליך"'},
+    {l:"S",c:"#2D7FF9",name:"S — הזהיר (Steadiness)",cue:"רגוע, מנומס, מהוסס, צריך זמן.",q:'"אני צריך לחשוב על זה... ומה אם זה לא יתאים?"'},
+    {l:"C",c:"#16B981",name:"C — המפקפק (Conscientiousness)",cue:"ענייני, מדייק, רוצה נתונים והוכחות.",q:'"תוכל לשלוח לי פירוט מלא עם נתונים?"'},
+  ];
+  return '<div class="identify">'+rows.map(r=>(
+    `<div class="id-row" style="--ic:${r.c}"><div class="id-badge">${r.l}</div><div class="id-main"><div class="id-name">${esc(r.name)}</div><div class="id-cue">${esc(r.cue)}</div><div class="id-quote">ישמע ממנו: ${esc(r.q)}</div></div></div>`
+  )).join("")+'</div>';
+}
+
+function buildExamples(list, label){
+  const head = label || "דוגמאות לשיחה שלך";
+  const rows = list.map(txt=>{
+    return `<div class="ex-item"><div class="ex-text">${esc(txt)}</div></div>`;
+  }).join("");
+  return `<div class="ex-block reveal d4"><div class="ex-title"><span class="ex-ico">💬</span> ${esc(head)}</div><div class="ex-list">${rows}</div></div>`;
+}
+
+function buildIfThen(pairs){
+  let html='<div class="ifthen">';
+  pairs.forEach((p,i)=>{
+    html+=`<div class="it-row" data-it="${i}">
+      <div class="it-if"><div class="lab">אם...</div><div class="txt">${esc(p.if)}</div><div class="hint">▸ לחצו לגילוי</div></div>
+      <div class="it-mid">←</div>
+      <div class="it-then"><div><div class="lab">אז...</div><div class="txt">${esc(p.then)}</div></div></div>
+    </div>`;
+  });
+  html+='</div>';
+  return html;
+}
+
+function buildCopy(copy){
+  return `<div class="copy-card reveal d4">
+    <div class="copy-head">
+      <div class="ch-label"><span class="dotc"></span>${esc(copy.label)}</div>
+    </div>
+    <div class="copy-body">${esc(copy.text)}</div>
+  </div>`;
+}
+
+const shareIco = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>';
+
+function renderTopic(li,ti){
+  const les = LESSONS[li];
+  const tp = les.topics[ti];
+  const accent = tp.accentOverride || les.accent;
+  const s = el('<section class="slide topic"><div class="glow"></div><div class="grid-bg"></div></section>');
+  s.style.setProperty("--accent", accent);
+
+  const isStep = (tp.points||[]).length > 0;
+  const pts = (tp.points||[]).map((p,i)=>`<li class="step-point" data-step="${i}"><span class="tick">✓</span><span>${esc(p)}</span></li>`).join("");
+  const pointsClass = "t-points";
+  const stepHint = isStep ? `<div class="step-hint">▶ לחץ קדימה לגילוי הנקודות</div>` : "";
+  if(isStep){ s.dataset.stepReveal = (tp.points||[]).length; s.dataset.stepDone = "0"; }
+
+  const shareBadge = tp.share ? `<div class="share-badge reveal">${shareIco} שיתוף מסך</div>` : "";
+  const discussBadge = tp.discuss ? `<div class="discuss-badge reveal">✋ שאלה לקהל — תנו לקהל לענות</div>` : "";
+  const tag = `<div class="t-tag reveal"><span class="pill">שיעור ${les.n}</span> ${esc(les.title)}</div>`;
+  const copy = tp.copy ? buildCopy(tp.copy) : "";
+  const examples = tp.examples ? buildExamples(tp.examples, tp.examplesLabel) : "";
+
+  s.insertAdjacentHTML("beforeend", `
+    <div class="topic-inner">
+      <div class="t-text">
+        ${tag}
+        ${shareBadge}
+        ${discussBadge}
+        <h3 class="reveal d1">${esc(tp.t)}</h3>
+        <p class="t-desc reveal d2">${esc(tp.desc||"")}</p>
+        <ul class="${pointsClass}">${pts}</ul>
+        ${stepHint}
+        ${copy}
+        ${examples}
+      </div>
+      <div class="t-art reveal d2"><div class="art-wrap">${buildArt(les,tp)}</div></div>
+    </div>
+  `);
+  return s;
+}
+
+// בנייה
+slides.forEach((sl,idx)=>{
+  let node;
+  if(sl.kind==="cover") node=renderCover();
+  else if(sl.kind==="lessonIntro") node=renderLessonIntro(sl.li);
+  else node=renderTopic(sl.li, sl.ti);
+  node.dataset.index = idx;
+  if(sl.kind==="lessonIntro") node.dataset.lesson = sl.li;
+  deck.appendChild(node);
+});
+
+// סרגל צד
+navEl.insertAdjacentHTML("beforeend", `
+  <div class="nav-item nav-cover" data-go="0">
+    <span class="dot" style="background:#fff"></span><span>פתיחה</span>
+  </div>
+`);
+LESSONS.forEach((les,li)=>{
+  const introIndex = slides.findIndex(s=>s.kind==="lessonIntro" && s.li===li);
+  navEl.insertAdjacentHTML("beforeend", `
+    <div class="nav-item" data-go="${introIndex}" data-lesson="${li}" style="--ni:${les.accent}">
+      <span class="dot" style="background:${les.accent}"></span>
+      <span>${esc(les.title)}</span>
+      <span class="ni-num">0${les.n}</span>
+    </div>
+  `);
+});
+
+/* ===================== ניווט ולוגיקה ===================== */
+const slideNodes = Array.from(deck.querySelectorAll(".slide"));
+let total = slideNodes.length;
+let current = 0;
+
+const progressBar = document.getElementById("progressBar");
+const counter = document.getElementById("counter");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+
+function pad(n){ return String(n).padStart(2,"0"); }
+
+function setCurrent(i){
+  if(i===current) return;
+  current = i;
+  updateUI();
+}
+
+function updateUI(){
+  progressBar.style.width = ((current+1)/total*100)+"%";
+  counter.innerHTML = `<b>${pad(current+1)}</b> / ${pad(total)}`;
+  prevBtn.disabled = current===0;
+  nextBtn.disabled = current===total-1;
+
+  // אקצנט גלובלי לחצים/מד לפי השקופית הנוכחית
+  const acc = slideNodes[current].style.getPropertyValue("--accent") || "#D4006A";
+  document.documentElement.style.setProperty("--accent", acc);
+
+  // סרגל צד פעיל
+  const cur = slides[current];
+  let activeLesson = null;
+  if(cur.kind==="lessonIntro"||cur.kind==="topic") activeLesson = cur.li;
+  document.querySelectorAll(".nav-item").forEach(n=>{
+    const l = n.dataset.lesson;
+    n.classList.toggle("active", l!==undefined && Number(l)===activeLesson);
+  });
+}
+
+function goTo(i){
+  i = Math.max(0, Math.min(total-1, i));
+  slideNodes[i].scrollIntoView({behavior:"smooth"});
+  // current יתעדכן ע"י המשקיף; אך נעדכן מיידית לתחושת תגובה
+  setCurrent(i);
+}
+
+// גילוי שלב-אחר-שלב — מחזיר true אם "אכל" את הקליק
+function tryStepReveal(){
+  const s = slideNodes[current];
+  if(!s || !s.dataset.stepReveal) return false;
+  const totalSteps = parseInt(s.dataset.stepReveal);
+  const done = parseInt(s.dataset.stepDone||"0");
+  if(done >= totalSteps) return false;
+  const pt = s.querySelector('.step-point[data-step="'+done+'"]');
+  if(pt) pt.classList.add("shown");
+  s.dataset.stepDone = done+1;
+  // הסתרת הרמז אחרי הקליק הראשון
+  const hint = s.querySelector(".step-hint");
+  if(hint) hint.style.display = "none";
+  return true;
+}
+
+// איפוס מצב גילוי בשקופית יעד
+function resetStepReveal(idx){
+  const s = slideNodes[idx];
+  if(!s || !s.dataset.stepReveal) return;
+  s.dataset.stepDone = "0";
+  s.querySelectorAll(".step-point").forEach(p=>p.classList.remove("shown"));
+  const hint = s.querySelector(".step-hint");
+  if(hint) hint.style.display = "";
+}
+
+prevBtn.addEventListener("click", ()=>{ resetStepReveal(current-1); goTo(current-1); });
+nextBtn.addEventListener("click", ()=>{ if(!tryStepReveal()) goTo(current+1); });
+
+// מקלדת — RTL: שמאל = קדימה, ימין = אחורה
+document.addEventListener("keydown", (e)=>{
+  if(e.key==="ArrowLeft"||e.key==="ArrowDown"||e.key==="PageDown"){ e.preventDefault(); if(!tryStepReveal()) goTo(current+1); }
+  else if(e.key==="ArrowRight"||e.key==="ArrowUp"||e.key==="PageUp"){ e.preventDefault(); resetStepReveal(current-1); goTo(current-1); }
+  else if(e.key==="Home"){ e.preventDefault(); goTo(0); }
+  else if(e.key==="End"){ e.preventDefault(); goTo(total-1); }
+});
+
+// משקיף — קובע שקופית פעילה + אנימציות חשיפה
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(en=>{
+    const idx = Number(en.target.dataset.index);
+    if(en.isIntersecting && en.intersectionRatio>=0.4){
+      en.target.classList.add("in-view"); // חשיפת אנימציה — נשארת דלוקה
+    }
+    if(en.isIntersecting && en.intersectionRatio>=0.55){
+      setCurrent(idx);
+    }
+  });
+},{root:deck, threshold:[0.4,0.55,0.75]});
+slideNodes.forEach(n=>io.observe(n));
+slideNodes[0].classList.add("in-view");
+
+// סרגל צד — לחיצה
+navEl.addEventListener("click",(e)=>{
+  const item = e.target.closest("[data-go]");
+  if(!item) return;
+  goTo(Number(item.dataset.go));
+  closeSidebar();
+});
+
+// אם-אז — לחיצה לגילוי
+deck.addEventListener("click",(e)=>{
+  const row = e.target.closest(".it-row");
+  if(row && row.querySelector(".it-if").contains(e.target)){
+    row.classList.toggle("open");
+  }
+});
+
+// העתקה
+deck.addEventListener("click", async (e)=>{
+  const btn = e.target.closest(".copy-btn");
+  if(!btn) return;
+  const id = btn.dataset.copy;
+  const body = document.getElementById(id);
+  const text = body ? body.textContent : "";
+  let ok = false;
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(text); ok=true;
+    }
+  }catch(err){ ok=false; }
+  if(!ok){
+    try{
+      window.focus();
+      const ta=document.createElement("textarea");
+      ta.value=text; ta.style.position="fixed"; ta.style.top="0"; ta.style.left="0"; ta.style.opacity="0";
+      document.body.appendChild(ta); ta.focus(); ta.select(); ta.setSelectionRange(0,text.length);
+      ok=document.execCommand("copy"); document.body.removeChild(ta);
+    }catch(err){ ok=false; }
+  }
+  const span = btn.querySelector("span");
+  if(ok){
+    btn.classList.add("done");
+    if(span) span.textContent="הועתק ✓";
+    setTimeout(()=>{ btn.classList.remove("done"); if(span) span.textContent="העתק"; }, 1900);
+  }else{
+    if(span) span.textContent="נסו שוב";
+    setTimeout(()=>{ if(span) span.textContent="העתק"; }, 1900);
+  }
+});
+
+// תפריט מובייל
+const sidebar=document.getElementById("sidebar");
+const scrim=document.getElementById("scrim");
+const menuBtn=document.getElementById("menuBtn");
+function openSidebar(){ sidebar.classList.add("open"); scrim.classList.add("open"); }
+function closeSidebar(){ sidebar.classList.remove("open"); scrim.classList.remove("open"); }
+menuBtn.addEventListener("click", openSidebar);
+scrim.addEventListener("click", closeSidebar);
+
+// עדכון קישור עורך + כותרת לפי רמה
+document.getElementById("editBtn").href = "/edit?l=" + LEVEL;
+document.title = "תורת המכירות · " + lcfg.label + " · חופית וגוני";
+
+// אתחול
+updateUI();
+console.log("%cתורת המכירות · חופית וגוני","color:#D4006A;font-weight:bold;font-size:14px");
+console.log("נטענו "+total+" שקופיות · "+LESSONS.length+" שיעורים");
+
+// סנכרון עם lessons.json — מאפשר עדכון מהעורך ללא נגיעה בקוד
+const EMBEDDED_LESSONS = [{"n":1,"title":"הפסיכולוגיה של הקנייה","accent":"#7C3AED","accentName":"סגול","blurb":"רגש vs היגיון · הטיות קוגניטיביות · ערך נתפס · FOMO אמיתי","topics":[{"t":"הם קונים ברגש — מצדיקים בהיגיון","icon":"truth","discuss":true,"desc":"95% מהחלטות הקנייה קורות ב'מוח הזוחלי' — לא בקורטקס הרציונלי.\nמה זה אומר לשיחות המכירה שלכם?","points":["ההחלטה מתקבלת רגשית — תוך שניות.","ההצדקה הרציונלית קורית אחר כך — כדי לשכנע את עצמו.","תמיד שאל: מה הרגש הדומיננטי של הלקוח הזה?","הפיץ' הרציונלי הטוב ביותר שלכם — פחות חזק מסיפור אחד."]},{"t":"5 הטיות קוגניטיביות שמשפיעות על קנייה","icon":"magnifier","desc":"הלקוח שלכם רציונלי? לא ממש. אלה הטיות שמשפיעות עליו כל הזמן — גם כשהוא לא מודע.","points":["מחסור (Scarcity): 'נשאר רק עוד 2 מקומות' — לחץ אמיתי.","הוכחה חברתית (Social Proof): 'לקוחות שעשו זה...' — מחסיר ספק.","סמכות (Authority): תוצאות, ניסיון, מדיה — בונים אוטומטית.","עקביות: 'אמרת שחשוב לך X — אז...' — חיבור להכרה.","עוגן (Anchor): מחיר ראשון שנאמר קובע את ה'סביר'."]},{"t":"ערך נתפס — להיות 'שווה יותר'","icon":"scale","desc":"אנשים לא קונים את מה שהם צריכים — הם קונים את מה שנראה להם שווה.\nוהערך הנתפס הוא משהו שאפשר לבנות.","points":["שם חכם לשירות > תיאור שירות. (VIP Process vs. 'ייעוץ')","חבילות > מחיר בודד — Bundling מגדיל ערך נתפס.","חוויה > תוצר — איך הלקוח מרגיש בתהליך קובע.","מי נותן השירות > מה הוא נותן — ה-WHO שווה יותר מה-WHAT."]},{"t":"FOMO אמיתי — דחיפות בלי שקר","icon":"fear","discuss":true,"desc":"דחיפות מזויפת הורסת אמון לנצח. אבל דחיפות אמיתית — סוגרת עסקאות.\nאיך יוצרים דחיפות שהלקוח מרגיש שנכונה?","points":["מחיר השקה / תמחור מוקדם — אמיתי ומתועד.","קיבולת מוגבלת — אם נכון לעסק שלכם, תגידו את זה.","חלון זמן רלוונטי: 'הרבעון מסתיים...' / 'מחיר עולה בחודש הבא'.","עלות האי-פעולה: 'כל חודש שעובר בלי זה — הוא X שקל שלא נכנסים'."]},{"t":"זהות הקונה — מי מקבל את ההחלטה?","icon":"people","desc":"לפעמים הלקוח שמולכם הוא לא מקבל ההחלטה. לפעמים הוא אחד מכמה.\nחשוב מאוד לזהות את זה מוקדם.","points":["'מי עוד מעורב בהחלטה הזו?' — שאלה חובה.","מי קובע? מי משפיע? מי משלם? — לא תמיד אותו אדם.","אם יש שותף/בן זוג — הזמינו אותם לשיחה הבאה.","אל תדברו לאחד ותניחו שהוא ימכור לשני — הוא לא יעשה את זה טוב כמוכם."]}]},{"n":2,"title":"High Ticket — עסקה מורכבת","accent":"#EF4444","accentName":"אדום","blurb":"מה זה High Ticket · Discovery Call · מבנה הצגת הצעה · 7 נגיעות","topics":[{"t":"מה זה High Ticket ולמה רלוונטי לכם?","icon":"price","desc":"High Ticket = עסקה עם מחיר גבוה שמצריכה תהליך — לא פיץ' אחד.\nזה לא רק B2B — כל עסקה מעל 3,000 ש\"ח מחייבת גישה שונה.","points":["מעל 3,000 ש\"ח: הלקוח מצפה לתהליך — לא לתשובה מיידית.","ממוצע נגיעות לסגירה High Ticket: 7-12 נגיעות.","ה-Discovery Call הוא כלי מכירה — לא שאלון.","טעות נפוצה: לנסות לסגור מהר מדי ולאבד את האמון."]},{"t":"שיחת Discovery — לחפור לפני שמציעים","icon":"dig","discuss":true,"desc":"שיחת הדיסקברי היא שיחת המכירה האמיתית.\nלא הפגישה 'להציג הצעה' — זו כבר שיחת סגירה.","points":["מטרה יחידה: להבין את הכאב העמוק ביותר של הלקוח.","כלל: שאלה כל 30 שניות — לא הסבר.","אל תציעו כלום — חפרו, חפרו, חפרו.","סיום נכון: 'אם היינו יכולים לפתור [X] ו-[Y] — היית מוכן להתקדם?'"]},{"t":"מבנה שיחת הצגת ההצעה","icon":"compass","desc":"לא כל מצגת היא מכירה. יש מבנה מדויק לשיחת הצגת הצעה שסוגרת.","points":["1. פתחו בסיכום הכאב — לא בפתרון. ('אז הבנתי שהמצב הוא...')","2. הציגו את החזון — מה אחרי. ('בסוף התהליך אתם אמורים...')","3. הציגו את התהליך — איך. (שלבים ברורים וממוספרים)","4. מחיר תמיד בסוף — לאחר שהערך ברור.","5. סיום: 'מה מרגיש לכם נכון?'"]},{"t":"כשיש יותר ממקבל החלטה אחד","icon":"people","discuss":true,"desc":"בן/בת זוג, שותף, מנהל — כשיש כמה מקבלי החלטה, הכללים משתנים.","points":["גלו מוקדם: 'מי עוד מעורב בהחלטה הזו?'","הזמינו את כולם לשיחה — לא תסמכו על אחד שיסביר לשני.","כל מקבל החלטה צריך להרגיש שהוא נשמע — לא רק שהוא שמע.","אם לא יכולים לאסוף את כולם — אל תתחייבו לסגירה."]},{"t":"7 הנגיעות — ממגע ראשון לסגירה","icon":"target","desc":"High Ticket לא נסגר בשיחה אחת. יש מסע.\nהמוכר המנצח הוא זה שמנהל את המסע בצורה עקבית.","points":["נגיעה 1-2: מגע ראשון + Discovery.","נגיעה 3-4: הצגת הצעה + פולואפ.","נגיעה 5-6: תשובות לשאלות + בניית ביטחון.","נגיעה 7+: סגירה — כן, לא, או הפנייה לעתיד."]}]},{"n":3,"title":"מו\"מ — אמנות הסגירה","accent":"#D4006A","accentName":"ורוד","blurb":"אל תנהל מו\"מ נגד עצמך · טכניקות סגירה · כוח השתיקה · ה'לא' כוח","topics":[{"t":"לעולם אל תנהל מו\"מ נגד עצמך","icon":"scale","discuss":true,"desc":"הטעות הגדולה ביותר במו\"מ: להוריד מחיר לפני שהלקוח ביקש.\nאתם מנהלים מו\"מ מול ה-HEAD שלכם, לא מול הלקוח.","points":["שתיקה > הנחה מיידית — תמיד.","אל תציעו הנחה — תנו אם מבקשים, ותמיד בתמורה.","כל ויתור חייב לקבל משהו בחזרה: 'אם אני נורד ב-X, אתה יכול לתת לי Y?'","הנחה ללא שאיפה = אתם מורידים את ערך עצמכם."]},{"t":"טכניקות סגירה — מה מתי","special":"ifthen","desc":"לחצו על כל טכניקה לגילוי מתי ואיך להשתמש בה.","pairs":[{"if":"Assumptive Close — סגירה מניחה","then":"'מתי נתחיל?' במקום 'אתה רוצה להתקדם?'"},{"if":"Alternative Close — שתי אפשרויות","then":"'מה עדיף לך — לשלם מלא או לשלושה תשלומים?'"},{"if":"Summary Close — סיכום וסגירה","then":"'אז הבנתי ש... ו... ו... ולכן הפתרון הכי נכון הוא X. מתקדמים?'"},{"if":"Trial Close — סגירת ניסוי","then":"'אם נפתור את [X] — יש סיבה שלא תתקדם?'"}]},{"t":"5 השניות הקריטיות — שתיקה אחרי מחיר","icon":"truth","desc":"אמרתם מחיר? עצרו. שתקו. המתינו.\nמי שמדבר ראשון אחרי אמירת מחיר — מפסיד.","points":["אמרו את המחיר — ועצרו לחלוטין.","5 שניות של שתיקה = לחץ חברתי על הלקוח לבטא מה הוא חושב.","אל תמהרו לפרק את הלחץ עם 'אבל כמובן שאפשר...'. ","תרגלו את זה עד שיהיה נוח לשבת בשתיקה."]},{"t":"כוח ה'לא' — מתי לוותר על עסקה","icon":"door","discuss":true,"desc":"היכולת לוותר על לקוח לא מתאים היא כוח — לא חולשה.\nלא כל לקוח הוא הלקוח שלכם.","points":["'אני חושב שאנחנו לא המשחק הנכון עבורכם — הנה למה...'","לקוח שנסגר בלחץ = לקוח שיצא בלחץ (וישמיע רעש).","ה'לא' לנכון — מוביל מהר ל'כן' של הנכון.","תחושת בטן: אם הלקוח גורם לכם להרגיש קטנים — זה לא לקוח שלכם."]},{"t":"מתי לתת הנחה — ומתי לא לגעת במחיר","icon":"divide","desc":"לא כל בקשת הנחה היא הנחה שצריך לתת.\nיש מגרש שבו נלחמים על מחיר — ויש מגרש שבו לא נכנסים.","points":["לא תורידו מחיר לפני שהציגו ערך מלא.","אם מבקשים הנחה — שאלו: 'על מה בדיוק תרצה הנחה? הנה מה שכלול'.","Bonus > הנחה — הוסיפו ערך במקום לגרוע ממחיר.","הנחה שנתתם = הגדרתם שהמחיר היה מנופח. הלקוח יזכור."]}]},{"n":4,"title":"שימור לקוחות ופניות","accent":"#10B981","accentName":"ירוק","blurb":"הלקוח הקיים · Upsell טבעי · מנגנון הפניות · CLV","topics":[{"t":"הלקוח הקיים = הזהב שלכם","icon":"handshake","discuss":true,"desc":"עלות רכישת לקוח חדש = 5-7 פעמים עלות שימור לקוח קיים.\nהאם העסק שלכם בנוי לשימור — או רק לרכישה?","points":["פולואפ אחרי סיום שירות — לא רק בזמן המכירה.","שאלו: 'מה עוד אני יכול לעזור לך?' — שאלה שרוב בעלי עסקים לא שואלים.","תוסיפו ערך לאחר הרכישה ללא עלות — מה שהם לא ציפו לקבל.","שביעות רצון אמיתית = הפניות אמיתיות."]},{"t":"Upsell וCross-sell טבעי","icon":"price","desc":"להציע עוד — לא להדחיס. מתי זה מרגיש טבעי ומתי גורש?\nהכל בתזמון ובגישה.","points":["Upsell: 'יש גרסה שנותנת לך גם [X] — רלוונטי?'","Cross-sell: 'לקוחות שלקחו את זה לקחו גם...'","תמיד בהקשר — לא כ'שלב שגרתי' בסוף שיחה.","שאלו תמיד: 'מה עוד מאתגר אותך בעסק?' — זה פותח את ה-Upsell הטבעי."]},{"t":"בניית מנגנון הפניות","icon":"link","discuss":true,"desc":"הפניה היא המכירה הקלה ביותר — והנדירה ביותר.\nכי אף אחד לא מבקש פניות נכון.","points":["מתי לבקש: ברגע ה-WOW — כשהלקוח אומר 'וואו, זה מדהים'.","'אם אתה מרוצה — מי עוד בסביבתך יכול להרוויח מזה?'","תמריץ: אם מתאים לעסקכם — הציעו משהו בתמורה לפניה.","עקבו אחרי הפניות ותודו — לקוח שהפנה ולא שמע תגובה לא יפנה שוב."]},{"t":"רגע ה-WOW — לייצר חוויה שמפנים","icon":"trophy","desc":"לקוחות לא מפנים כי הם מרוצים. הם מפנים כי הם היו מופתעים.\nמה ה-WOW שאתם יכולים לתת שהלקוח לא ציפה?","points":["מה אפשר לתת שלא התחייבתם עליו — ויגרום ל'וואו'?","פולואפ מפתיע שבוע אחרי סיום — 'סתם רציתי לדעת איך הולך'.","מתנת הפתעה קטנה: מדריך, ייעוץ קצר, כתבה רלוונטית.","ה-WOW ייזכר — הביצועים לא תמיד."]},{"t":"Customer Lifetime Value — לחשב את השווי האמיתי","icon":"scale","desc":"לקוח אחד שנשאר 3 שנים שווה פי 10 מלקוח חד-פעמי.\nהאם אתם יודעים כמה שווה לקוח ממוצע שלכם?","points":["CLV = ממוצע רכישה × תדירות × תקופת שימור.","חשבו: כמה שווה לקוח ממוצע שלכם ל-2 שנים?","ברגע שיודעים CLV — עלות פרסום ורכישה מקבלת פרספקטיבה.","שאלה: האם כדאי לכם לתת הנחה כדי לשמר לקוח ל-3 שנים נוספות?"]}]},{"n":5,"title":"מדדים וניהול עצמי","accent":"#F59E0B","accentName":"כתום","blurb":"Conversion Rate · שגרת מכירות · חוסן מנטלי · ה-Funnel שלכם","topics":[{"t":"לא ניהלת מספרים — לא ניהלת עסק","icon":"target","discuss":true,"desc":"מכירות בלי מדדים = טיסה בלי מכשירים.\nאפשרי — רק עד שמפסיקים לפגוש בניין.","points":["כמה לידים נכנסים בחודש?","כמה מתוכם הפכו לשיחות?","כמה שיחות הפכו להצעות?","כמה הצעות הפכו ללקוחות? — זה ה-Funnel שלכם."]},{"t":"Conversion Rate — המדד שמשנה הכל","icon":"magnifier","desc":"אם תסגרו 30% במקום 15% — הכנסתכם תוכפל. בלי ליד נוסף אחד.\nזה הכסף שכבר נמצא במערכת שלכם.","points":["Lead → Meeting: כמה אחוז מהלידים מגיעים לשיחה?","Meeting → Proposal: כמה אחוז מקבלים הצעה?","Proposal → Close: כמה אחוז סוגרים?","איפה ה'דליפה' הגדולה ביותר? — שם הכסף האמיתי."]},{"t":"שגרת מכירות יומית שעובדת","icon":"compass","desc":"ביצועי מכירות = שגרה + ביצוע עקבי. לא השראה, לא מצב רוח.\nהשגרה עושה את ההבדל בין ממוצע למצוין.","points":["בוקר: 3 פולואפים לפני כל דבר אחר.","צהריים: שיחת מכירה אחת מינימום.","ערב: תיעוד + תכנון מחר.","שבועי: מדידת Conversion מכל מקור ושלב."]},{"t":"ה-Funnel שלכם — איפה הדליפה?","special":"ifthen","desc":"לחצו על כל שלב כדי לגלות מה לבדוק כשהמספרים לא טובים.","pairs":[{"if":"ליד נכנס → לא עונה לשיחה","then":"בדקו את מהירות הטיפול בליד — יותר מ-5 דקות = איבוד משמעותי"},{"if":"שיחה → לא מגיע להצעה","then":"בדקו את שאלות הכשירות — אולי לידים לא מתאימים נכנסים"},{"if":"הצעה → לא נסגר","then":"בדקו את מבנה הצגת הערך — מחיר לפני ערך = לא סוגר"},{"if":"נסגר → לא חוזר שוב","then":"בדקו את חוויית הלקוח בתהליך — אין WOW = אין שימור"}]},{"t":"חוסן מנטלי — NO = Next Opportunity","icon":"truth","discuss":true,"desc":"הם לא דוחים אותכם. הם דוחים הצעה שלא הגיעה בזמן הנכון.\nאיך נשארים חזקים אחרי 'לא' — ואפילו לומדים ממנו?","points":["NO = Next Opportunity — כל 'לא' מקרב ל'כן' הבא.","אחרי כל 'לא': שאלו את עצמכם מה יכלתי לשנות?","הפרידו זהות מביצועים — אתם לא ה'לא' שקיבלתם.","מי שלא מקבל 'לא' — לא מוכר מספיק."]}]},{"n":6,"title":"הגוף, הקול, האנרגיה שמוכרים","accent":"#0EA5E9","accentName":"כחול","blurb":"כוח הקול בטלפון · שפת גוף בפגישה · ניהול המצב הפנימי · לקרוא את הפגישה","topics":[{"t":"93% מהתקשורת — בלי מילה אחת","icon":"truth","desc":"מחקר מהרביאן: 7% מהרושם נובע ממה שאומרים.\n93% — מהאופן שבו אומרים ומה הגוף עושה.\nגם בטלפון.","points":["קול: עוצמה, קצב, הפסקות — שלושת האלמנטים שמשדרים ביטחון.","גוף: יציבה, מגע עיניים, מרחב — בפגישה הם 'מדברים' לפניכם.","גם בטלפון הלקוח 'שומע' חיוך, עצבנות, לחץ — הגוף מעצב את הקול.","שאלה: מה הגוף שלכם אומר כשאתם מציגים מחיר?"]},{"t":"כוח הקול בטלפון — שלושה ידיות","icon":"scan","desc":"בטלפון אין גוף — יש רק קול. ולקול יש שלוש ידיות שאתם שולטים בהן.","points":["קצב: דבר לאט 20% יותר ממה שנראה לכם טבעי. לחץ מאיץ — ביטחון מאט.","עוצמה: אל תיפלו בסוף משפטים — שאלות נשמעות חלשות כשהקול יורד.","הפסקות: 2 שניות אחרי נקודה חשובה = לקוח עוצר וחושב. אל תמלאו את הריק.","אחד לתרגל עכשיו: הקליטו שיחה אחת. האם הקול שלכם מוכר?"]},{"t":"ניהול המצב הפנימי — 60 שניות לפני שיחה","icon":"target","desc":"המצב הרגשי שלכם לפני שיחה קובע אותה יותר מכל תסריט.\nהמוח לא מבדיל בין עצבנות אמיתית לעצבנות שמשוחקת.","points":["60 שניות לפני שיחה: 3 נשימות עמוקות + משפט אחד לעצמכם ('אני כאן לעזור').","הסירו הסחות: לא מייל פתוח, לא רעש רקע — נוכחות מלאה.","ביצועים רעים בשיחה? 80% מהפעמים — מצב פנימי, לא חוסר ידע.","אחרי שיחה קשה: הפסקה של 5 דקות לפני השיחה הבאה — אל תיכנסו 'לחמים'."]},{"t":"שפת גוף בפגישה פרונטלית","icon":"people","desc":"הפגישה מתחילה לפני שאמרתם מילה אחת.\nמה שהגוף שלכם עושה כשנכנסים — כבר מוכר או מרחיק.","points":["כניסה: צעד נינוח + חיוך אמיתי + לחיצת יד יציבה (לא ריסוק).","ישיבה: לא מול — בזווית של 45°. פחות עימות, יותר שיחה.","מגע עיניים: 70% מהזמן כשאתם מקשיבים, 50% כשאתם מדברים.","ידיים על השולחן — פתוחות. ידיים שמוסתרות = חוסר ביטחון שנוחש."]},{"t":"לקרוא את הפגישה בזמן אמת","special":"ifthen","desc":"לחצו על כל סימן לגילוי מה הוא אומר ומה לעשות.","pairs":[{"if":"מצלב ידיים / נשען אחורה","then":"הגנה — עצרו, שאלו שאלה פתוחה: 'מה מרגיש לך לא מתאים?'"},{"if":"נשען קדימה / מהנהן","then":"מעורבות — זה הרגע להמשיך ולהעמיק, לא לסכם ולברוח"},{"if":"מסתכל על שעון / מסך","then":"עומס — קצרו מיד, שאלו: 'מה הכי חשוב לכם שנכסה עכשיו?'"},{"if":"חיוך + מגע עיניים ישיר","then":"ביטחון גבוה — זה הרגע לשאלת הסגירה הראשונה"}]}]},{"n":7,"title":"לחמם את הקרח — לידים שנעלמו","accent":"#8B5CF6","accentName":"סגול כהה","blurb":"למה לידים 'נעלמים' · כלל 30-60-90 · סקריפט הריאקטיבציה · מה לא לאמר","topics":[{"t":"הכסף שכבר נמצא אצלכם — רק מחכה","icon":"price","desc":"כל בעל עסק יושב על רשימה של לידים שאמרו 'אחר כך', 'תחזור אלי', 'אני חושב'.\nרוב בעלי העסקים לא חוזרים. זה כסף מוכן שמחכה.","points":["מחקר: 80% מהעסקאות נסגרות בין נגיעה 5-12 — רוב בעלי העסקים עוצרים אחרי 2.","ליד 'קר' = ליד עסוק. לא ליד שלא רוצה.","כמה לידים יש לכם מהחצי שנה האחרונה שלא קיבלו פולואפ אמיתי?","כל ריאקטיבציה שמצליחה = ליד שכבר שלם את עלות הרכישה שלו."]},{"t":"למה לידים 'נעלמים' — הסיבה האמיתית","icon":"magnifier","desc":"הם לא שכחו אתכם. לא 'החליטו שלא'. הם נבלעו לחיים.\nוהאחריות לחזור — היא שלכם.","points":["70% מהלידים 'הקרים' עדיין קונים — רק מישהו אחר שחזר אליהם.","חיים זזו: לחץ, עדיפויות, כסף — לא 'לא'. פשוט לא עכשיו.","אם לא חזרתם — שלחתם מסר שאתם לא מחויבים.","ריאקטיבציה לא אומרת 'לנגח' — אומרת להיות שם כשהם מוכנים."]},{"t":"כלל 30-60-90 — מתי ובאיזה ערוץ","special":"ifthen","desc":"לכל שלב יש ערוץ נכון ומסר נכון. לחצו לגילוי.","pairs":[{"if":"30 ימים — ליד שלא ענה","then":"WhatsApp קצר: 'היי [שם], רק רציתי לדעת אם המצב השתנה — עדיין רלוונטי?'"},{"if":"60 ימים — עדיין שתיקה","then":"שיחת טלפון קצרה: 'ראיתי שלא דיברנו — קרה משהו שדחה את זה?'"},{"if":"90 ימים — ריאקטיבציה מלאה","then":"הצעת ערך חדשה: 'יש לנו תהליך חדש שמתאים בדיוק למצב שתיארתם — 10 דקות?'"},{"if":"מעל 6 חודשים","then":"פתחו מחדש: 'מאז שדיברנו השנה הייתה [X]. האם הנושא של [Y] עדיין רלוונטי?'"}]},{"t":"הסקריפט שעובד — ומה לא לאמר","icon":"truth","desc":"המשפטים שהורגים ריאקטיבציה — לעומת המשפטים שפותחים אותה מחדש.","points":["לא: 'בדקת את מה שדיברנו?' — מרגיש כמו תזכורת לשיעורי בית.","לא: 'רציתי לדעת אם קיבלת החלטה' — לחץ שדוחף לא.","כן: 'לא דיברנו מאז [תאריך] — קרה משהו שדחה את זה?'","כן: 'יש לי לקוח בתחום דומה שהתמודד עם [בעיה שלהם] — רלוונטי לשמוע מה עשינו?'"]},{"t":"תרגיל מיידי — 5 לידים עכשיו","icon":"compass","desc":"לא מחר, לא 'אחרי הקורס'. עכשיו.\nכל אחד מכם יוצא מהחדר עם 5 שמות ומסר שמוכן לשליחה.","points":["פתחו את הטלפון — מצאו 5 לידים שלא ענו מהחצי שנה האחרונה.","לכל אחד: כתבו מה הכאב שהוא תיאר בשיחה הראשונה.","נסחו מסר שפותח מהכאב שלו — לא מהמוצר שלכם.","שלחו עד הערב. לא 'בשבוע הבא'. היום."]}]},{"n":8,"title":"הצהרת הזהות + 90 ימים","accent":"#D4AF37","accentName":"זהב","blurb":"זהות המוכר · תוכנית 90 ימים · הקהילה שלכם","topics":[{"t":"אתם לא 'מוכרים' — אתם פותרי בעיות","icon":"truth","discuss":true,"desc":"המכירה הטובה ביותר היא כשהלקוח מרגיש שהגיע לפתרון — לא שמכרו לו.\nזה הבדל בזהות, לא רק בטכניקה.","points":["בנו זהות של מומחה שפותר בעיות — לא של מוכר שרוצה כסף.","דברו על מה שאתם יכולים לתת — לא על מה שאתם רוצים לקבל.","המוניטין שלכם = עסקאות שקרו גם בלי שדחפתם.","שאלו את עצמכם: 'האם הלקוח ירגיש שעשיתי לו טובה — או שמכרתי לו?'"]},{"t":"תוכנית 90 הימים שלכם","icon":"target","desc":"יוצאים מהיום הזה עם תוכנית אמיתית — לא עוד 'אני אחשוב על זה'.\nכל אחד יוצא עם 3 התחייבויות.","points":["30 ימים ראשונים: הוסיפו מדדים — ספרו כל ליד, שיחה, הצעה.","60 ימים: בנו תסריט שיחה ותרגלו אותו ב-10 שיחות אמיתיות.","90 ימים: העבירו את הידע — הכשירו מישהו אחד מה'שיטה' שלכם.","שתפו את ה-3 התחייבויות שלכם עם האדם שלידכם."]},{"t":"ספורט קבוצתי — הקהילה שלכם","icon":"people","discuss":true,"desc":"מכירות בעידן הזה הן ספורט קבוצתי. אתם לא צריכים להמציא את הגלגל לבד.\nהתנאי להצלחה: לא לעשות את זה לבד.","points":["הצטרפו לקהילה שמדווחים בה — חשבונאות מגדילה ביצועים ב-40%.","מנטור + פידבק שוטף > קורסים בלי תמיכה.","תרגלו בצמדים: סימולציות שבועיות עם קולגה.","שאלת הסיום: מה אתם עושים אחרת מחר בבוקר?"]}]}];
+Promise.resolve(EMBEDDED_LESSONS).then(function(serverData){
+  if(JSON.stringify(serverData)===JSON.stringify(LESSONS)) return; // אין שינוי
+  LESSONS = serverData;
+  // בנייה מחדש של הדק
+  deck.innerHTML = '';
+  navEl.innerHTML = '';
+  copyCounter = 0;
+  slides.length = 0;
+  slides.push({kind:'cover'});
+  LESSONS.forEach(function(les,li){
+    slides.push({kind:'lessonIntro',li});
+    les.topics.forEach(function(_,ti){ slides.push({kind:'topic',li,ti}); });
+  });
+  slides.forEach(function(sl,idx){
+    var node;
+    if(sl.kind==='cover') node=renderCover();
+    else if(sl.kind==='lessonIntro') node=renderLessonIntro(sl.li);
+    else node=renderTopic(sl.li,sl.ti);
+    node.dataset.index=idx;
+    if(sl.kind==='lessonIntro') node.dataset.lesson=sl.li;
+    deck.appendChild(node);
+  });
+  navEl.insertAdjacentHTML('beforeend','<div class="nav-item nav-cover" data-go="0"><span class="dot" style="background:#fff"></span><span>פתיחה</span></div>');
+  LESSONS.forEach(function(les,li){
+    var ii=slides.findIndex(function(s){ return s.kind==='lessonIntro'&&s.li===li; });
+    navEl.insertAdjacentHTML('beforeend','<div class="nav-item" data-go="'+ii+'" data-lesson="'+li+'" style="--ni:'+les.accent+'"><span class="dot" style="background:'+les.accent+'"></span><span>'+esc(les.title)+'</span><span class="ni-num">0'+les.n+'</span></div>');
+  });
+  slideNodes.length=0;
+  Array.from(deck.querySelectorAll('.slide')).forEach(function(n){ slideNodes.push(n); io.observe(n); });
+  total = slideNodes.length;
+  if(slideNodes[0]) slideNodes[0].classList.add('in-view');
+  current=0;
+  updateUI();
+  console.log("נטענו נתונים מ-lessons.json · "+LESSONS.length+" שיעורים");
+}).catch(function(){/* fallback to embedded LESSONS */});
+</script>
+</body>
+</html>
