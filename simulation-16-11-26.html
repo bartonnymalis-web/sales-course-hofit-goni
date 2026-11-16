@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>סימולציית מכירה 16/11/26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#000000;--bg-soft:#0a0a0c;--panel:#101014;--panel-2:#16161c;
+  --line:#26262e;--pink:#D4006A;--white:#ffffff;--muted:#9a9aa6;--muted-2:#6b6b76;
+  --accent:#D4006A;
+  --font:'Heebo',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+  --mono:'JetBrains Mono','SFMono-Regular',Consolas,monospace;
+  --sidebar-w:260px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--bg);color:var(--white);font-family:var(--font);direction:rtl;overflow:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+
+/* layout */
+.app{display:flex;height:100vh;width:100vw}
+
+/* sidebar */
+.sidebar{width:var(--sidebar-w);flex:0 0 var(--sidebar-w);height:100vh;background:linear-gradient(180deg,#0c0c10,#050507);border-left:1px solid var(--line);display:flex;flex-direction:column;z-index:40;transition:transform .3s ease}
+.brand{padding:22px 20px 16px;border-bottom:1px solid var(--line)}
+.brand .logo{display:flex;align-items:center;gap:10px}
+.brand .mark{width:34px;height:34px;border-radius:9px;background:var(--pink);display:flex;align-items:center;justify-content:center;font-weight:900;color:#fff;font-size:18px;box-shadow:0 0 22px rgba(212,0,106,.55)}
+.brand .name{font-weight:800;font-size:17px;letter-spacing:.2px}
+.brand .sub{color:var(--muted);font-size:11.5px;margin-top:7px;font-weight:500;line-height:1.5}
+.nav{flex:1;overflow-y:auto;padding:12px 10px}
+.nav::-webkit-scrollbar{width:7px}
+.nav::-webkit-scrollbar-thumb{background:#222;border-radius:8px}
+.nav-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:11px;cursor:pointer;color:var(--muted);font-weight:600;font-size:13.5px;transition:.18s;margin-bottom:3px;border:1px solid transparent}
+.nav-item:hover{background:#15151b;color:#fff}
+.nav-item .dot{width:10px;height:10px;border-radius:50%;flex:0 0 10px;background:var(--pink)}
+.nav-item .ni-num{font-family:var(--mono);font-size:11px;color:var(--muted-2);margin-right:auto}
+.nav-item.active{background:#15151b;color:#fff;border-color:color-mix(in srgb,var(--accent) 40%,transparent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent) inset}
+.nav-cover{border-bottom:1px dashed var(--line);margin-bottom:8px;padding-bottom:10px}
+.nav-foot{padding:12px 16px;border-top:1px solid var(--line);color:var(--muted-2);font-size:11px;line-height:1.5}
+
+/* deck */
+.deck{flex:1;height:100vh;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;position:relative}
+.deck::-webkit-scrollbar{width:0}
+
+/* slide base */
+.slide{min-height:100vh;width:100%;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;padding:64px clamp(24px,5vw,90px);overflow:hidden}
+.slide .glow{position:absolute;inset:0;pointer-events:none;background:radial-gradient(900px 520px at 78% 18%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 60%);opacity:.9}
+.slide .grid-bg{position:absolute;inset:0;pointer-events:none;opacity:.25;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:46px 46px;-webkit-mask-image:radial-gradient(circle at 78% 30%,#000,transparent 70%);mask-image:radial-gradient(circle at 78% 30%,#000,transparent 70%)}
+
+/* reveal */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+.slide.in-view .reveal{opacity:1;transform:none}
+.slide.in-view .reveal.d1{transition-delay:.08s}
+.slide.in-view .reveal.d2{transition-delay:.16s}
+.slide.in-view .reveal.d3{transition-delay:.24s}
+.slide.in-view .reveal.d4{transition-delay:.32s}
+.slide.in-view .reveal.d5{transition-delay:.40s}
+.art-wrap{opacity:0;transform:translateX(-34px) scale(.96);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1);transition-delay:.18s}
+.slide.in-view .art-wrap{opacity:1;transform:none}
+
+/* cover */
+.cover{flex-direction:column;text-align:center;gap:20px}
+.cover .kicker{font-family:var(--mono);letter-spacing:3px;font-size:13px;color:var(--pink);text-transform:uppercase;font-weight:700}
+.cover h1{font-size:clamp(38px,7vw,84px);font-weight:900;line-height:1.02;margin:0;background:linear-gradient(180deg,#fff,#cfa6bd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.cover .pinkword{color:var(--pink);-webkit-text-fill-color:var(--pink)}
+.cover .crumb{display:inline-flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;color:var(--muted);font-size:clamp(14px,2vw,19px);font-weight:600;margin-top:6px}
+.cover .crumb b{color:#fff}
+.cover .crumb .sep{color:var(--pink);font-weight:800}
+.cover .big-mark{width:96px;height:96px;border-radius:24px;background:var(--pink);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:46px;box-shadow:0 0 60px rgba(212,0,106,.55);margin-bottom:6px}
+.cover .scroll-hint{margin-top:26px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.cover .scroll-hint .chev{width:22px;height:22px;border-right:2px solid var(--pink);border-bottom:2px solid var(--pink);transform:rotate(45deg);animation:bob 1.6s infinite}
+@keyframes bob{0%,100%{transform:rotate(45deg) translate(0,0)}50%{transform:rotate(45deg) translate(5px,5px)}}
+
+/* topic slides */
+.topic{align-items:center}
+.topic-inner{width:100%;max-width:1180px;display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(28px,5vw,70px);align-items:center}
+.t-text{min-width:0}
+.t-tag{display:inline-flex;align-items:center;gap:9px;margin-bottom:18px;font-size:12.5px;font-weight:700;color:var(--accent);font-family:var(--mono);letter-spacing:.5px}
+.t-tag .pill{background:color-mix(in srgb,var(--accent) 14%,transparent);border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);padding:4px 11px;border-radius:999px}
+.t-text h3{font-size:clamp(26px,4.2vw,50px);font-weight:900;line-height:1.08;margin:0 0 14px;letter-spacing:-.5px}
+.t-text h3 .hl{color:var(--accent)}
+.t-desc{color:#d9d9e3;font-size:clamp(15px,1.6vw,18px);line-height:1.65;font-weight:400;max-width:560px;margin:0}
+.t-points{list-style:none;padding:0;margin:20px 0 0;display:flex;flex-direction:column;gap:12px;max-width:560px}
+.t-points li{display:flex;gap:12px;align-items:flex-start;color:#c7c7d2;font-size:15px;line-height:1.5;font-weight:500}
+.t-points li .tick{flex:0 0 22px;width:22px;height:22px;border-radius:7px;margin-top:2px;background:color-mix(in srgb,var(--accent) 16%,transparent);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);display:flex;align-items:center;justify-content:center;color:var(--accent);font-weight:900;font-size:12px}
+.t-art{display:flex;align-items:center;justify-content:center;min-width:0}
+
+/* art card */
+.art-card{width:100%;max-width:460px;aspect-ratio:1/1;border-radius:28px;background:radial-gradient(120% 120% at 75% 15%,color-mix(in srgb,var(--accent) 22%,transparent),transparent 55%),linear-gradient(160deg,#0e0e13,#08080b);border:1px solid var(--line);box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.02) inset;display:flex;align-items:center;justify-content:center;padding:34px;position:relative;overflow:hidden}
+.art-card::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 120%,color-mix(in srgb,var(--accent) 14%,transparent),transparent 60%)}
+.art-card svg{width:100%;height:100%;position:relative;z-index:1;overflow:visible}
+
+/* objections full-width */
+.obj-full{max-width:1100px;width:100%}
+.obj-header{margin-bottom:22px}
+.obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.obj-card{background:#0c0c11;border:1px solid var(--line);border-right:3px solid var(--accent);border-radius:12px;padding:14px 16px}
+.obj-trigger{font-family:var(--mono);font-size:11.5px;color:var(--accent);font-weight:700;margin-bottom:7px;display:flex;align-items:center;gap:7px}
+.obj-trigger .badge{background:color-mix(in srgb,var(--accent) 12%,transparent);border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);padding:2px 8px;border-radius:999px;font-size:11px}
+.obj-ans{font-size:14px;color:#e2e2ea;line-height:1.55;font-weight:500}
+
+/* ratio */
+.ratio-wrap{width:100%}
+.ratio-bar{display:flex;height:88px;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.ratio-client{flex:0 0 70%;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 70%,#000),color-mix(in srgb,var(--accent) 40%,#000));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.ratio-you{flex:0 0 30%;background:#15151c;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-right:1px solid var(--line)}
+.ratio-pct{font-family:var(--mono);font-weight:800;font-size:32px;color:#fff}
+.ratio-lab{font-size:13px;color:#eee;font-weight:700}
+.ratio-you .ratio-lab{color:var(--muted)}
+.ratio-note{margin-top:16px;color:#c7c7d2;font-size:14px;line-height:1.6;text-align:center}
+
+/* animations */
+.float{animation:float 5s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+.pulse{animation:pulse 2.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+.dash{stroke-dasharray:6 8;animation:march 1.4s linear infinite}
+@keyframes march{to{stroke-dashoffset:-28}}
+.spin-slow{transform-box:fill-box;transform-origin:center;animation:spin 22s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* progress + arrows + counter */
+.progress{position:fixed;top:0;right:0;left:0;height:4px;z-index:60}
+.progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--accent),#fff);transition:width .35s ease;box-shadow:0 0 14px var(--accent)}
+.arrows{position:fixed;bottom:22px;left:24px;display:flex;gap:10px;z-index:50}
+.arrow-btn{width:50px;height:50px;border-radius:14px;cursor:pointer;background:rgba(16,16,22,.85);border:1px solid var(--line);backdrop-filter:blur(8px);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;transition:.18s}
+.arrow-btn:hover{background:var(--accent);border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 45%,transparent)}
+.arrow-btn:disabled{opacity:.3;cursor:default;transform:none;background:rgba(16,16,22,.85);border-color:var(--line);box-shadow:none}
+.counter{position:fixed;bottom:26px;right:calc(var(--sidebar-w) + 22px);z-index:50;font-family:var(--mono);font-size:13px;color:var(--muted);background:rgba(16,16,22,.7);border:1px solid var(--line);padding:6px 12px;border-radius:10px;backdrop-filter:blur(6px)}
+.counter b{color:#fff}
+
+/* mobile */
+.menu-btn{position:fixed;top:14px;right:14px;z-index:70;display:none;width:46px;height:46px;border-radius:12px;background:rgba(16,16,22,.9);border:1px solid var(--line);color:#fff;align-items:center;justify-content:center;cursor:pointer;font-size:20px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;display:none}
+@media(max-width:900px){
+  .topic-inner{grid-template-columns:1fr;gap:26px}
+  .t-art{order:-1}
+  .art-card{max-width:300px}
+  .sidebar{position:fixed;right:0;top:0;transform:translateX(100%);box-shadow:-10px 0 40px rgba(0,0,0,.6)}
+  .sidebar.open{transform:none}
+  .menu-btn{display:flex}
+  .scrim.open{display:block}
+  .counter{right:auto;left:24px;bottom:84px}
+  .arrows{bottom:18px;left:18px}
+  .obj-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar" id="sidebar">
+  <div class="brand">
+    <div class="logo">
+      <div class="mark">מ</div>
+      <div><div class="name">סימולציית מכירה 16/11/26</div></div>
+    </div>
+    <div class="sub">ערך מוסף · 15 נושאים</div>
+  </div>
+  <div class="nav" id="nav"></div>
+  <div class="nav-foot">ערך מוסף · 15 נושאים</div>
+</nav>
+
+<!-- ===== DECK ===== -->
+<div class="deck" id="deck">
+
+<!-- 1: במה אתם שונים? -->
+<section class="slide topic" data-index="1">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">01</span> בידול</div>
+      <h3 class="reveal d1">"במה אתם שונים?"<br><span class="hl">שאלה שחייב להיות מוכנים אליה</span></h3>
+      <p class="t-desc reveal d2">ברוב המקרים: הלקוח מחפש ביטחון ומחפש סיבה לתת אמון. אין צורך להתגונן. (לא מדבר על האנטים)</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>לפני שעונים, חשוב לשאול: "מה הכי חשוב לך שיהיה נכון במי שתבחר?" — ואז קל יותר להבין איך לנסח את התשובה שיבין את ההבדלים</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>אם הוא כבר היה אצל אחרים: "מה היה אצל הקודם שלא עבד? ממה שחווית עד כה, מה היית רוצה להימנע?" ממה ששמת לב, מה הכי חשוב שיהיה בתהליך שלך שאולי לא היה עד כה?</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>רק אחרי שהבנתם מה לא הצליח, במילים שלו: "יש הרבה שעוסקים בזה. אצלי ההבדל הוא [הדבר האחד], ובגללו מגיעים ל[תוצאה]"</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>עונים בכנות ובביטחון — ושותקים. לא רשימת מכולת של "מקצועיים, אמינים, ותיקים": כולם אומרים את זה, ולכן זה רעש</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>למתקדמים: שמתם לב שיש לו טריגר ממילה מסוימת? למשל: נפשי. <br>בהסבר שניתן ובשאר השיחה נשתדל לומר אנרגיה/מנטלי וכו'.</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible"><g class="float"><rect x="50" y="46" width="220" height="76" rx="22" fill="color-mix(in srgb,var(--accent) 12%,transparent)" stroke="var(--accent)" stroke-width="2.5"></rect><text x="160" y="92" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="18" fill="#fff">מה חשוב לך?</text><path d="M170 140 L170 178" stroke="var(--accent)" stroke-width="3" class="dash"></path><polygon points="170,198 159,179 181,179" fill="var(--accent)"></polygon><path d="M170 212 L208 250 L170 288 L132 250 Z" fill="color-mix(in srgb,var(--accent) 22%,transparent)" stroke="var(--accent)" stroke-width="3" class="pulse"></path></g><text x="170" y="326" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="13" fill="var(--accent)">קודם שואלים — ואז מבדלים</text></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2: מצאתי הצעה יותר זולה -->
+<section class="slide topic" data-index="2" style="align-items:flex-start;padding-top:52px;padding-bottom:52px">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="obj-full">
+    <div class="obj-header">
+      <div class="t-tag reveal"><span class="pill">02</span> מתחרה זול</div>
+      <h3 class="reveal d1" style="font-size:clamp(24px,3.6vw,44px);font-weight:900;margin:0 0 8px;letter-spacing:-.5px">"מצאתי הצעה <span style="color:var(--accent)">יותר זולה</span>"</h3>
+      <p class="reveal d2" style="color:#d9d9e3;font-size:14.5px;margin:0;line-height:1.5">חבל דק: מתקדמים לאט וקוראים את הלקוח. כל עוד הוא משתף פעולה — ממשיכים לשאול. אם הוא נסגר — עוברים לגישה עדינה יותר.</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">שלב א׳</span>מכבדים ושואלים — שאלה אחת בכל פעם</div>
+        <div class="obj-ans">"קודם כל, אני שמח שאתה בודק זה הכי חשוב שיש" ואז: "מה בדיוק הציעו לך?" · "מה כלול שם?" · "יש הבדלים ממה שראית בהצעות? אם כן, איפה זה שונה ממה שאני מציע?" </div>
+      </div>
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">מחפשים</span>את השורש</div>
+        <div class="obj-ans">אחרי כל תשובה מחכים, ורק אז שואלים את הבאה.<br>שיתוף הפעולה שלו זה הדבר שהכי חשוב לי, אם הוא נסגר לא השגתי כלום.</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">שלב ב׳</span>אם הוא לא משתף פעולה — משקפים</div>
+        <div class="obj-ans">"יכול להיות שיש הרבה הבדלים." · "לא תמיד רואים אותם." · "ומאחר שלא רואים, קל להציע הצעה שנראית טוב, ובפועל לא באמת מצדיקה גם את המחיר הזול."</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">שאלת המשך</span>רק אם הוא פתוח</div>
+        <div class="obj-ans">"מה קורה אם בוחרים בזול ולא מגיעה תוצאה?"</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">שלב ג׳</span>ביושר</div>
+        <div class="obj-ans">"אם זה באמת אותו דבר בפחות — זו בחירה הגיונית. בוא נוודא יחד שזה באמת אותו דבר.<br>כי בכנות, אני באמת רוצה לעזור לך שתקבל את ההחלטה הנכונה עבורך, לפה או לפה." הכנות בונה אמון, ובדרך כלל מתברר שזה לא אותו דבר.</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">לא אומרים</span>מה שמקלקל</div>
+        <div class="obj-ans">לבזות את המתחרה — זה פוגע גם בבחירה שהלקוח שקל · להשוות מחיר מיד · לפתוח בהסברים: מי שפותח בהסברים מאבד את הלקוח אחרי חצי דקה.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3: איך מדברים עם עצמנו -->
+<section class="slide topic" data-index="3">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">03</span> ערך עצמי</div>
+      <h3 class="reveal d1">קודם — איך מדברים<br><span class="hl">עם עצמנו</span></h3>
+      <p class="t-desc reveal d2">לפני שמדברים עם אחרים על מחיר, מבינים איך מדברים עם עצמנו. זה נשמע בקול, בשיחת הטלפון.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>מי שמוריד את עצמו לא יצליח לשכנע ולהוביל אדם להאמין שהוא שווה את המחיר, לא משנה מהו</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>במיוחד כשהמחיר נמוך או יקר יחסית לשוק: שם הכי קל להישמע כמי שמתנצל או מישהו שלא בטוח שבמה שהוא מבקש</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>המחיר עצמו הוא לא הנקודה — המקום שממנו אומרים אותו הוא הנקודה</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>מי שמאמין שהוא שווה את המחיר יכול לומר גם מחיר נגיש וגם יקר מהשוק בראש מורם</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible"><g class="float"><rect x="64" y="34" width="212" height="66" rx="33" fill="color-mix(in srgb,var(--accent) 12%,transparent)" stroke="var(--accent)" stroke-width="2.5"></rect><text x="170" y="77" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="22" fill="var(--accent)">אני שווה</text><path d="M150 100 L142 122 L176 100" fill="color-mix(in srgb,var(--accent) 12%,transparent)" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"></path><rect x="136" y="150" width="68" height="118" rx="14" fill="none" stroke="#fff" stroke-width="3"></rect><rect x="156" y="160" width="28" height="4" rx="2" fill="#777"></rect><circle cx="170" cy="250" r="7" fill="var(--accent)" class="pulse"></circle><path d="M114 196 Q96 212 114 228" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" class="pulse"></path><path d="M92 184 Q64 212 92 240" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" class="pulse" style="animation-delay:.5s"></path><path d="M226 196 Q244 212 226 228" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" class="pulse"></path><path d="M248 184 Q276 212 248 240" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" class="pulse" style="animation-delay:.5s"></path></g><text x="170" y="318" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="13" fill="#fff">הלקוח שומע את זה בקול</text></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4: יקר ביחס למה? -->
+<section class="slide topic" data-index="4" style="align-items:flex-start;padding-top:52px;padding-bottom:52px">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="obj-full">
+    <div class="obj-header">
+      <div class="t-tag reveal"><span class="pill">04</span> מחיר</div>
+      <h3 class="reveal d1" style="font-size:clamp(24px,3.6vw,44px);font-weight:900;margin:0 0 8px;letter-spacing:-.5px">"יקר לי" — <span style="color:var(--accent)">יקר ביחס למה?</span></h3>
+      <p class="reveal d2" style="color:#d9d9e3;font-size:14.5px;margin:0;line-height:1.5">ברוב המקרים זה לא כסף אלא ערך: עדיין לא ברור לו שזה שווה את ההשקעה. רק במיעוט המקרים אין באמת תקציב.</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">לפני הכול</span>אומרים את המחיר — ושותקים</div>
+        <div class="obj-ans">מי שממלא את הרגע, מתנצל או מסביר, משדר חוסר ביטחון. מי שמדבר ראשון אחרי המחיר נוטה להפסיד.</div>
+      </div>
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">שלב א׳</span>שאלה אחת</div>
+        <div class="obj-ans">"יקר ביחס למה?" או "כמה ציפית לשלם?"</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">שלב ב׳</span>מפרקים</div>
+        <div class="obj-ans">"יקר ביחס למה שחשבת להוציא, או שעדיין לא ברור לך שזה שווה את ההשקעה?"</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">שלב ג׳</span>עלות אי-הפעולה</div>
+        <div class="obj-ans">"כמה זה עולה לך להישאר במצב הנוכחי עוד שנה?"</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">אחרי זה</span>פריסה במקום הנחה</div>
+        <div class="obj-ans">מציעים פריסה לתשלומים ולא מורידים מחיר — אותו ערך, ועומס קל יותר על הלקוח.</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">לא אומרים</span>מה שמקלקל</div>
+        <div class="obj-ans">הנחה מיידית. "זה לא יקר" — מתווכחים עם התחושה במקום לברר אותה. וגם לא מצדיקים את המחיר מיד אחרי שאמרנו אותו: הלקוח שומע שאנחנו לא בטוחים בו.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5: אפשר הנחה? -->
+<section class="slide topic" data-index="5">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">05</span> הנחה</div>
+      <h3 class="reveal d1">"אפשר הנחה?"<br><span class="hl">קודם סוגרים פינה</span></h3>
+      <p class="t-desc reveal d2">לפעמים זה מיקוח רגיל, לפעמים חשש שזה לא שווה, ולפעמים תקציב אמיתי. מבררים לפני שמחליטים.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>שלב א׳ — ישירות וכנות: "אני מעריך את הישירות, ולכן אהיה ישיר וכנה איתך באותה מידה. אין לנו אפשרות לבצע הנחות. אנחנו יודעים מה אנחנו נותנים לך וכמה זה שווה בטווח הרחוק."</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>שלב ב׳ — סוגרים את הפינה: "רק כדי להבין, אם ההנחה שביקשת הייתה מאושרת, היינו סוגרים עכשיו? או שיש עוד משהו?"</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>אם המחיר הוא לא החסם היחיד — ההנחה לא תעזור, וחוזרים לברר מה באמת עוצר אותו</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>לא שואלים "כמה אתה רוצה לשלם?", ולא נותנים הנחה מיידית בלי שום תמורה — זה מלמד אותו שמספיק לבקש</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible"><g class="float"><circle cx="170" cy="150" r="84" fill="color-mix(in srgb,var(--accent) 8%,transparent)" stroke="var(--accent)" stroke-width="3.5"></circle><circle cx="170" cy="150" r="104" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 6" class="spin-slow"></circle><text x="170" y="182" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="88" fill="var(--accent)">%</text><line x1="114" y1="94" x2="226" y2="206" stroke="#fff" stroke-width="7" stroke-linecap="round"></line></g><text x="170" y="300" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="17" fill="var(--accent)">קודם סוגרים פינה</text><text x="170" y="322" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="12" fill="var(--muted)">ורק אחר כך שוקלים</text></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6: ארבעה צעדים לפני הנחה -->
+<section class="slide topic" data-index="6" style="align-items:flex-start;padding-top:52px;padding-bottom:52px">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="obj-full">
+    <div class="obj-header">
+      <div class="t-tag reveal"><span class="pill">06</span> הנחה</div>
+      <h3 class="reveal d1" style="font-size:clamp(24px,3.6vw,44px);font-weight:900;margin:0 0 8px;letter-spacing:-.5px">אם באמת נותנים — <span style="color:var(--accent)">ארבעה צעדים</span></h3>
+      <p class="reveal d2" style="color:#d9d9e3;font-size:14.5px;margin:0;line-height:1.5">ההחלטה שלכם, בשקט — לא תגובה ללחץ. מי שנותן פתח באמצע השיחה ונכנס למשא ומתן מזמין עוד ניסיונות.</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">צעד 1</span>סוגרים את הפינה</div>
+        <div class="obj-ans">זה הדבר היחיד שמונע מלהתקדם? רק אם כן — ממשיכים.</div>
+      </div>
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">צעד 2</span>אומרים שאין הבטחה</div>
+        <div class="obj-ans">"אני לא מבטיח כלום, פשוט באמת רוצה שתצליח, ולכן מהצד שלי אשתדל לעשות מה שאפשר."</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">צעד 3</span>מנתקים ובודקים</div>
+        <div class="obj-ans">מסיימים את השיחה, ומוודאים באיזו שעה או באיזה טווח שעות הוא זמין — כדי לחזור אליו עם תשובה.</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">צעד 4</span>חוזרים עם החלטה</div>
+        <div class="obj-ans">"זה לא קורה, אבל בכנות — זה חד-פעמי, ואשמח שנשאיר את זה בינינו. ההצעה קצובה בזמן, לשיחה הזו/ עד מחר בבוקר (לקרוא את הסיטואציה): משלמים ומתקדמים."</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">למה זה עובד</span>הלקוח מעריך</div>
+        <div class="obj-ans">הוא מבין שבאמת עשו הרבה כדי לאפשר לו את זה — ולכן קל לו הרבה יותר לקבל את ההחלטה.</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">חשוב</span>ההחלטה שלכם</div>
+        <div class="obj-ans">הורדת מחיר חד-פעמית היא החלטה לגיטימית כשהלקוח באמת מתקשה — כשהיא החלטה שלכם, נאמרת בשקט, ולא נגררת מלחץ.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 7: עד 24 שעות לתגובה -->
+<section class="slide topic" data-index="7">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">07</span> קצב תגובה</div>
+      <h3 class="reveal d1">ליד נכנס למערכת<br>מתי עונים?<br>לא מיד — <span class="hl">עד 24 שעות</span></h3>
+      <p class="t-desc reveal d2">בעל עסק שעונה מיד לכל פנייה נראה כמי שיושב וממתין. נותנים לליד להתחמם — ולהבין שאנחנו לא מחכים לו אלא הוא לנו.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>החלון: תוך שעות ספורות, ועד 24 שעות לכל היותר — לא מיד, ולא אחרי יומיים</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>מענה מיידי משדר "אני פנוי לגמרי ומחכה לך" — והלקוח לא ממהר לחזור</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>בוחרים שעה קבועה להודעה הראשונה, למשל בפתיחת היום — כך לא מגיבים בבהלה לכל פנייה</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>24 שעות הן תקרה ולא יעד: הכל תלוי בכמות העבודה, תעדוף שלכם למשימות ובכנות, מה שיותר נוח לכם.</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible"><g class="float"><circle cx="170" cy="150" r="96" fill="none" stroke="var(--line)" stroke-width="14"></circle><circle cx="170" cy="150" r="96" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" pathLength="100" stroke-dasharray="60 40" transform="rotate(-90 170 150)"></circle><circle cx="114" cy="228" r="10" fill="#fff" class="pulse"></circle><text x="170" y="164" text-anchor="middle" font-family="JetBrains Mono" font-weight="800" font-size="58" fill="#fff">24</text><text x="170" y="192" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="14" fill="var(--accent)">שעות לכל היותר</text></g><text x="170" y="318" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="13" fill="#fff">לא מיד · ולא אחרי יומיים</text></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8: מנסים להגיע לשיחה -->
+<section class="slide topic" data-index="8">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">08</span> שיחה</div>
+      <h3 class="reveal d1">מנסים בכל דרך —<br><span class="hl">להגיע לשיחה</span></h3>
+      <p class="t-desc reveal d2">וואטסאפ הוא הערוץ הקר ביותר. את הערך מסבירים בשיחה, ולכן כל הודעה נועדה להביא אליה.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>ערך אי אפשר להעביר בהודעה: כל מקרה שונה, ובטלפון שומעים טון, מבינים ומתאימים את ההצעה.<br>אתם רוצים שאנשים ישמעו ויוכלו גם להתחבר ולהכיר אתכם.</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>כל מה שנשלח בכתב נועד להביא לשיחה — לא להחליף אותה<br></span></li>
+        
+        <li class="reveal d5"><span class="tick">✓</span><span>מי שבאמת מעוניין יעלה לשיחה — דרך נוספת להבין מראש מי רציני ומי סתם השאיר פרטים.</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible"><g class="float"><rect x="118" y="44" width="104" height="196" rx="22" fill="color-mix(in srgb,var(--accent) 8%,transparent)" stroke="var(--accent)" stroke-width="3.5"></rect><circle cx="170" cy="112" r="22" fill="none" stroke="var(--accent)" stroke-width="2.5" class="pulse"></circle><circle cx="170" cy="112" r="38" fill="none" stroke="var(--accent)" stroke-width="2" class="pulse" style="animation-delay:.5s"></circle><circle cx="170" cy="112" r="8" fill="var(--accent)"></circle><rect x="134" y="190" width="72" height="34" rx="17" fill="var(--accent)"></rect><text x="170" y="213" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="15" fill="#fff">שיחה</text><rect x="12" y="78" width="86" height="34" rx="12" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="4 5"></rect><text x="55" y="100" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="13" fill="#666">הודעה</text><rect x="242" y="136" width="86" height="34" rx="12" fill="none" stroke="#444" stroke-width="2" stroke-dasharray="4 5"></rect><text x="285" y="158" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="13" fill="#666">הודעה</text></g><text x="170" y="290" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="14" fill="#fff">מהודעה — לשיחה</text></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9: תשלחו לי בהודעה -->
+<section class="slide topic" data-index="9" style="align-items:flex-start;padding-top:52px;padding-bottom:52px">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="obj-full">
+    <div class="obj-header">
+      <div class="t-tag reveal"><span class="pill">09</span> שיחה</div>
+      <h3 class="reveal d1" style="font-size:clamp(24px,3.6vw,44px);font-weight:900;margin:0 0 8px;letter-spacing:-.5px">"תשלחו לי בהודעה" — <span style="color:var(--accent)">חותרים לשיחה</span></h3>
+      <p class="reveal d2" style="color:#d9d9e3;font-size:14.5px;margin:0;line-height:1.5">לרוב זו דרך מנומסת לסיים, או חוסר רצון בשיחה. ההצעה מותאמת אישית, ואי אפשר לבנות אותה בלי להכיר את הלקוח. אחרי שהוא מקבל את כל הפרטים בכתב, הסיכוי שיחזור לשיחה יורד.</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">שלב א׳</span>בשמחה — ושואלים</div>
+        <div class="obj-ans">"בשמחה. מה הכי חשוב שיהיה שם, כדי לעזור לך להחליט?" אם אין תשובה — קיים הסיכוי שזו לא בקשה אמיתית.</div>
+      </div>
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">שלב ב׳</span>מחליפים בשיחה קצרה</div>
+        <div class="obj-ans">"קשה לי להסביר דבר כזה בכתב, כי כל מקרה שונה ובסוף זה בהתאמה אישית. <br>אם תרצה, נוכל לדבר חמש דקות בטלפון ואז אדע בדיוק מה להציע שמתאים לך."</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">שלב ג׳</span>אם באמת צריך הודעה</div>
+        <div class="obj-ans">אם אתם רואים שאין שום שיתוף פעולה ואתם לא רוצים לשרוף את הליד:<br>שולחים משהו קצר וממוקד, וקובעים מראש מתי עוברים עליו: "אשלח עד הערב. נקבע עכשיו עשר דקות מחר לעבור על זה. 11:00 מתאים?"<br><br>אם לא רוצה גם אז לדבר- הוא לא רציני ואין מה לבזבז עליו אנרגיה.</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">לא אומרים</span>מה שמאבד את הלקוח</div>
+        <div class="obj-ans">"אין בעיה, אשלח הכול." — בלי המשך, ההודעה תישאר בלי מענה.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10: מסלול ללידים שנעלמו -->
+<section class="slide topic" data-index="10">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">10</span> ליד שלא עונה</div>
+      <h3 class="reveal d1">לא הודעה אחת —<br><span class="hl">מסלול</span></h3>
+      <p class="t-desc reveal d2">ליד שלא עונה הוא לא "לא". לרוב העניין דעך, או שלא נוח לו לענות. המסלול מקל עליו לחזור.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>לא הודעה אחת, ולא חמש שיחות: כמה הודעות במרווחים גדולים יחסית, ובסוף — לכל היותר שתי שיחות</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>ההודעות קצרות, קלילות ואנושיות — לא נראות כמו הודעה אוטומטית. אפשר גם הקלטה קולית קצרה, בסגנון הדיבור שלכם</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>בכל הודעה משנים קצת את הניסוח, והנימה עולה בהדרגה: קלילה, אחר כך ישירה, ובסוף יבשה</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>תמיד מסיימים בנימה חיובית — כדי שאם יחזור בעתיד, יהיה לו קל לחזור וליצור קשר</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible"><g class="float"><path d="M290 96 L50 96" stroke="var(--accent)" stroke-width="2" class="dash"></path><circle cx="290" cy="96" r="15" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="290" y="101" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="15" fill="#fff">1</text><circle cx="242" cy="96" r="15" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="242" y="101" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="15" fill="#fff">2</text><circle cx="194" cy="96" r="15" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="194" y="101" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="15" fill="#fff">3</text><circle cx="146" cy="96" r="15" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="146" y="101" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="15" fill="#fff">4</text><circle cx="98" cy="96" r="15" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="98" y="101" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="15" fill="#fff">5</text><circle cx="50" cy="96" r="15" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="50" y="101" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="15" fill="#fff">6</text><path d="M50 114 L50 152 L290 152 L290 184" fill="none" stroke="var(--accent)" stroke-width="2" class="dash"></path><circle cx="290" cy="206" r="22" fill="var(--accent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="290" y="210" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="12" fill="#fff">שיחה</text><circle cx="210" cy="206" r="22" fill="var(--accent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="210" y="210" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="12" fill="#fff">שיחה</text><circle cx="130" cy="206" r="22" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="2.5"></circle><text x="130" y="210" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="12" fill="#fff">פרידה</text><path d="M268 206 L232 206" stroke="var(--accent)" stroke-width="2" class="dash"></path><path d="M188 206 L152 206" stroke="var(--accent)" stroke-width="2" class="dash"></path><text x="170" y="62" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="13" fill="var(--muted)">שש הודעות במרווחים</text></g><text x="170" y="298" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="14" fill="#fff">מסלול — לא הודעה אחת</text></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11: שש ההודעות -->
+<section class="slide topic" data-index="11" style="align-items:flex-start;padding-top:52px;padding-bottom:52px">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="obj-full">
+    <div class="obj-header">
+      <div class="t-tag reveal"><span class="pill">11</span> ליד שלא עונה</div>
+      <h3 class="reveal d1" style="font-size:clamp(24px,3.6vw,44px);font-weight:900;margin:0 0 8px;letter-spacing:-.5px">ואיך זה נראה בפועל:<br>שש הודעות — <span style="color:var(--accent)">במרווחים</span></h3>
+      <p class="reveal d2" style="color:#d9d9e3;font-size:14.5px;margin:0;line-height:1.5">הניסוחים הם דוגמה: בכל פעם משנים קצת, ובשם שלכם ושל העסק.</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">יום 1 · בוקר</span>פתיחה קלילה</div>
+        <div class="obj-ans">"היי [שם], מה נשמע? 😊 <br>זה [השם שלך] מ[שם העסק]. <br>מתי מתאים לנו לשוחח היום?" <br><br>נשלחת בבוקר, כחלק מפתיחת היום.</div>
+      </div>
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">יום 1 · ערב</span>מראים שאנחנו זמינים</div>
+        <div class="obj-ans">"היי היי, <br>אני פנוי לשוחח גם עכשיו/ הערב אם זה מסתדר לך יותר."<br><br><br>שולחים את ההודעה מאזור 18:00 וצפונה.</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">יום 2 · בוקר</span>הצעה לשעה</div>
+        <div class="obj-ans">"היי היי, <br>פנוי היום לקראת 12:00 לשוחח?" — ואז מרפים עד הערב.</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">יום 2 · ערב</span>מקפיצים בקלילות</div>
+        <div class="obj-ans">"היי [שם], מקפיץ הודעה למקרה שנוח לדבר הערב. אני זמין 🙂" <br>חשוב לשנות את הניסוח קצת בכל פעם שלא ייראה אוטומטי.</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">יום 3 · בוקר</span>מתקשחים קצת</div>
+        <div class="obj-ans">"[שם]?" — הודעה ישירה, בשם בלבד. היא אישית יותר, וגורמת לצד השני להבין ולהרגיש קצת לא נעים: ארבע הודעות בלי מענה.</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">יום 3 בערב או יום 4 בבוקר</span>יבש וקר</div>
+        <div class="obj-ans">"היי [שם], <br>אשמח למענה." — פ<br>פנייה ישירה, כי רוצים תגובה. זה כבר היום הרביעי שהוא לא עונה בכלל.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 12: שיחות והודעת פרידה -->
+<section class="slide topic" data-index="12" style="align-items:flex-start;padding-top:52px;padding-bottom:52px">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="obj-full">
+    <div class="obj-header">
+      <div class="t-tag reveal"><span class="pill">12</span> ליד שלא עונה</div>
+      <h3 class="reveal d1" style="font-size:clamp(24px,3.6vw,44px);font-weight:900;margin:0 0 8px;letter-spacing:-.5px">ואם עדיין שקט — <span style="color:var(--accent)">שיחות ופרידה</span></h3>
+      <p class="reveal d2" style="color:#d9d9e3;font-size:14.5px;margin:0;line-height:1.5">רק אחרי ההודעות, ולא לפניהן: שיחה אחת, שיחה שנייה, והודעה אחרונה.</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">שיחה 1</span>בערב, או למחרת</div>
+        <div class="obj-ans">שיחה אחת בלבד. לא מצלצלים שוב ושוב באותו יום.</div>
+      </div>
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">שיחה 2</span>כעבור 24 שעות</div>
+        <div class="obj-ans">לכל היותר שתי שיחות בסך הכול — עוד שיחה היא כבר רדיפה.</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">הודעה אחרונה</span>פרידה בחום</div>
+        <div class="obj-ans">"היי [שם], <br>אני מבין מהחוסר מענה שזה כנראה פחות רלוונטי עבורך. אם אני טועה, מוזמן לעדכן ואעזור בשמחה.<br>בכל מקרה, המון בהצלחה! ❤️"</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">למה בנימה חיובית</span>משאירים דלת פתוחה</div>
+        <div class="obj-ans">אם הוא יחזור בעתיד, יהיה לו קל יותר להירתם וליצור קשר.</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">אפשרות נוספת</span>שלוש דלתות</div>
+        <div class="obj-ans">לפני הפרידה אפשר לשלוח: "לא רוצה לרדוף, רק לסגור פינה. איפה זה עומד מבחינתך: כן, לא, או שצריך עוד משהו ממני?"</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">הכלל</span>לא "עדכון?" שוב ושוב</div>
+        <div class="obj-ans">הודעה שחוזרת על עצמה משדרת נזקקות ושוחקת את הערך. לכן בכל הודעה ניסוח אחר, ונימה שעולה בהדרגה.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 13: סוגרים מעגלים -->
+<section class="slide topic" data-index="13">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">13</span> פולו-אפ נכון</div>
+      <h3 class="reveal d1">סוגרים<br><span class="hl">מעגלים</span></h3>
+      <p class="t-desc reveal d2">איך עושים פולו אפ נכון?</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>לפני שיחה — יושבים רגע ועוברים על מה שיש: מה הוא השאיר (אם השאיר), מה אני רוצה להשיג מהשיחה. </span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>מיד אחרי — כותבים סיכום שיחה ורושמים פרטים (משפטים, מילים שאמר), כל עוד הזיכרון עוד טרי</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>רושמים את המשפטים שלו, במילים שלו — הם החומר לסיכום, לפולו-אפ ולסגירה</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>מה שלא כתוב — נשכח. והלקוח זוכר מה שאמר, ומרגיש כשזה נשכח</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible"><g class="float"><circle cx="170" cy="150" r="104" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="4 6" class="spin-slow"></circle><circle cx="170" cy="150" r="82" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" pathLength="100" stroke-dasharray="100 0" transform="rotate(-90 170 150)"></circle><path d="M134 152 L162 182 L210 122" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="170" cy="68" r="8" fill="#fff" class="pulse"></circle></g><text x="170" y="298" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="18" fill="var(--accent)">מעגל סגור</text><text x="170" y="320" text-anchor="middle" font-family="Heebo" font-weight="700" font-size="12" fill="var(--muted)">שום דבר לא נשאר באוויר</text></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 14: מה סוגרים בכל שיחה -->
+<section class="slide topic" data-index="14" style="align-items:flex-start;padding-top:52px;padding-bottom:52px">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="obj-full">
+    <div class="obj-header">
+      <div class="t-tag reveal"><span class="pill">14</span> פולו-אפ נכון</div>
+      <h3 class="reveal d1" style="font-size:clamp(24px,3.6vw,44px);font-weight:900;margin:0 0 8px;letter-spacing:-.5px">מה סוגרים — <span style="color:var(--accent)">בכל שיחה</span></h3>
+      <p class="reveal d2" style="color:#d9d9e3;font-size:14.5px;margin:0;line-height:1.5">הרגלים קטנים שמונעים מלקוחות ליפול בין הכיסאות.</p>
+    </div>
+    <div class="obj-grid">
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">לפני</span>יושבים ומתכוננים</div>
+        <div class="obj-ans">עוברים על הכרטיס ועל כל מה שנאמר עד עכשיו: שם, מה השאיר, מאיפה הגיע, שאלות, והתנגדות צפויה.</div>
+      </div>
+      <div class="obj-card reveal d2">
+        <div class="obj-trigger"><span class="badge">אחרי</span>סיכום שיחה — תוך דקות</div>
+        <div class="obj-ans">מה סוכם, מה הוא הבין, מה הצעד הבא. כל עוד הזיכרון עוד טרי.</div>
+      </div>
+      <div class="obj-card reveal d3">
+        <div class="obj-trigger"><span class="badge">אחרי</span>המשפטים שלו</div>
+        <div class="obj-ans">כותבים ציטוטים מדויקים, במילים שלו. הם חומר הגלם לפולו-אפ ולסיכום המראה.</div>
+      </div>
+      
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">כלל</span>הבטחה נסגרת באותו יום</div>
+        <div class="obj-ans">אמרתם בשיחה "אשלח לך"? שולחים באותו יום. הבטחה פתוחה היא מעגל פתוח.</div>
+      </div>
+      <div class="obj-card reveal d4">
+        <div class="obj-trigger"><span class="badge">שבועי</span>חמש דקות על מי שנעלם</div>
+        <div class="obj-ans">עוברים על מי שנעלם או אמר לא, ורואים אילו התנגדויות חוזרות. שם נמצא מה ללמוד.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 15: הפחד להטריד -->
+<section class="slide topic" data-index="15">
+  <div class="glow"></div><div class="grid-bg"></div>
+  <div class="topic-inner">
+    <div class="t-text">
+      <div class="t-tag reveal"><span class="pill">15</span> ביטחון</div>
+      <h3 class="reveal d1">לא מטרידים —<br><span class="hl">עוזרים</span></h3>
+      <p class="t-desc reveal d2">הפחד להטריד נולד מבלבול בין מכירה לבין דחיפה בכוח.</p>
+      <ul class="t-points">
+        <li class="reveal d3"><span class="tick">✓</span><span>אם המוצר שלכם באמת עוזר — לא להציע אותו ללקוח זה לעשות לו עוול</span></li>
+        <li class="reveal d4"><span class="tick">✓</span><span>ההבדל בין שירות להטרדה הוא באופן: ערך בכל פנייה, כבוד לזמן שלו- מצלצלים בזמן (במידה וקבענו)</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>הרי בסוף, ממי רוצים לקנות — ממוכר שמוכר? או חבר שדואג? ברגע שנותנים ערך ויוצרים חיבור אמיתי, הדרך להפוך לחבר היא קלה הרבה יותר.</span></li>
+        <li class="reveal d5"><span class="tick">✓</span><span>הפחד בא מחוסר ביטחון, לא ממה שהמוצר באמת נותן — ולכן חוזרים לשאלה הראשונה: איך מדברים עם עצמנו?</span></li>
+      </ul>
+    </div>
+    <div class="t-art reveal d2">
+      <div class="art-wrap">
+        <div class="art-card">
+          <svg viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg" overflow="visible"><g class="float"><path d="M170 252 C62 176 68 84 124 84 C150 84 166 100 170 114 C174 100 190 84 216 84 C272 84 278 176 170 252 Z" fill="color-mix(in srgb,var(--accent) 14%,transparent)" stroke="var(--accent)" stroke-width="3.5" stroke-linejoin="round" class="pulse"></path><circle cx="170" cy="46" r="7" fill="#fff" class="pulse" style="animation-delay:.5s"></circle></g><text x="170" y="306" text-anchor="middle" font-family="Heebo" font-weight="800" font-size="14" fill="#fff">חבר שדואג — לא מוכר לוחץ</text></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</div><!-- /deck -->
+</div><!-- /app -->
+
+<div class="progress"><div class="bar" id="progressBar"></div></div>
+<div class="arrows">
+  <button class="arrow-btn" id="prevBtn" title="הקודם">↑</button>
+  <button class="arrow-btn" id="nextBtn" title="הבא">↓</button>
+</div>
+<div class="counter" id="counter"><b>01</b> / 15</div>
+<button class="menu-btn" id="menuBtn">☰</button>
+<div class="scrim" id="scrim"></div>
+
+<script>
+var TOPICS = ["במה אתם שונים?", "מצאתי הצעה יותר זולה", "איך מדברים עם עצמנו", "יקר ביחס למה?", "אפשר הנחה?", "ארבעה צעדים לפני הנחה", "עד 24 שעות לתגובה", "מנסים להגיע לשיחה", "תשלחו לי בהודעה", "מסלול ללידים שנעלמו", "שש ההודעות", "שיחות והודעת פרידה", "סוגרים מעגלים", "מה סוגרים בכל שיחה", "הפחד להטריד"];
+var navEl = document.getElementById('nav');
+TOPICS.forEach(function(label,i){
+  var d = document.createElement('div');
+  d.className = 'nav-item';
+  d.dataset.goto = i;
+  d.innerHTML = '<span class="dot"></span><span>'+label+'</span><span class="ni-num">'+String(i+1).padStart(2,'0')+'</span>';
+  navEl.appendChild(d);
+});
+
+var deck = document.getElementById('deck');
+var slideNodes = Array.from(deck.querySelectorAll('.slide'));
+var total = slideNodes.length;
+var current = 0;
+
+var progressBar = document.getElementById('progressBar');
+var counter = document.getElementById('counter');
+var prevBtn = document.getElementById('prevBtn');
+var nextBtn = document.getElementById('nextBtn');
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+function updateUI(){
+  progressBar.style.width = ((current+1)/total*100)+'%';
+  counter.innerHTML = '<b>'+pad(current+1)+'</b> / '+pad(total);
+  prevBtn.disabled = current===0;
+  nextBtn.disabled = current===total-1;
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    n.classList.toggle('active', parseInt(n.dataset.goto)===current);
+  });
+}
+
+function goTo(i){
+  i = Math.max(0, Math.min(total-1, i));
+  current = i;
+  slideNodes[i].scrollIntoView({behavior:'smooth'});
+  updateUI();
+}
+
+prevBtn.addEventListener('click', function(){ goTo(current-1); });
+nextBtn.addEventListener('click', function(){ goTo(current+1); });
+
+document.querySelectorAll('.nav-item[data-goto]').forEach(function(n){
+  n.addEventListener('click', function(){ goTo(parseInt(n.dataset.goto)); });
+});
+
+document.addEventListener('keydown', function(e){
+  if(e.key==='ArrowLeft'||e.key==='ArrowDown'||e.key==='PageDown'){ e.preventDefault(); goTo(current+1); }
+  else if(e.key==='ArrowRight'||e.key==='ArrowUp'||e.key==='PageUp'){ e.preventDefault(); goTo(current-1); }
+  else if(e.key==='Home'){ e.preventDefault(); goTo(0); }
+  else if(e.key==='End'){ e.preventDefault(); goTo(total-1); }
+});
+
+var io = new IntersectionObserver(function(entries){
+  entries.forEach(function(en){
+    if(en.isIntersecting){
+      en.target.classList.add('in-view');
+      var idx = slideNodes.indexOf(en.target);
+      if(idx >= 0){ current = idx; updateUI(); }
+    }
+  });
+},{ threshold:0.5 });
+slideNodes.forEach(function(s){ io.observe(s); });
+
+const menuBtn = document.getElementById("menuBtn");
+const sidebar = document.getElementById("sidebar");
+const scrim = document.getElementById("scrim");
+menuBtn.addEventListener("click", ()=>{ sidebar.classList.toggle("open"); scrim.classList.toggle("open"); });
+scrim.addEventListener("click", ()=>{ sidebar.classList.remove("open"); scrim.classList.remove("open"); });
+
+updateUI();
+</script>
+</body>
+</html>
